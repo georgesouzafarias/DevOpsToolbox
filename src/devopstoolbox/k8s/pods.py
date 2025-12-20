@@ -1,12 +1,15 @@
 import typer
 from rich.console import Console
 from rich.table import Table
-from kubernetes import client, config, watch
+from kubernetes import client
+from kubernetes.client import CustomObjectsApi
+from devopstoolbox.k8s import utils
 
 
 app = typer.Typer(no_args_is_help=True)
 console = Console()
-config.load_kube_config()
+config = utils.get_kube_config()
+custom_api = CustomObjectsApi()
 
 @app.command()
 def list(namespace: str = "default", all_namespaces: bool = False):
@@ -36,4 +39,40 @@ def list(namespace: str = "default", all_namespaces: bool = False):
     except Exception as err:
         console.print(f"[bold red]Error accessing Kubernetes:[/bold red] \n\n{err}")
 
+@app.command()
+def list_overprovisioning(namespace: str = "default", all_namespaces: bool = False):
+    """
+    Retrieves CPU and memory usage metrics for all pods in a given namespace.
+    """
+    scope = "all_namespaces" if all_namespaces else namespace
+    console.print(f"[bold blue]Listing pods in {scope}...[/bold blue]")
 
+    try:
+        pod_metrics = custom_api.list_namespaced_custom_object(
+            group="metrics.k8s.io",
+            version="v1beta1",
+            namespace=scope,
+            plural="pods"
+        )
+
+        table = Table(title=f"Pods Metrics in {scope}")
+        table.add_section()
+        table.add_column("Namespace", style="cyan", justify="center")
+        table.add_column("Pod Name", style="cyan", justify="center")
+        table.add_column("Container Name", style="green", justify="center")
+        table.add_column("CPU Usage", style="green", justify="center")
+        table.add_column("Memory Usage", style="green", justify="center")
+
+        print(f"Metrics for pods in namespace '{scope}':")
+        for pod in pod_metrics.get("items", []):
+            for container in pod["containers"]:
+
+                cpu_usage = float(container["usage"]["cpu"])
+                memory_usage = float(container["usage"]["memory"])
+
+                table.add_row(scope or "-", pod["metadata"]["name"], container["name"], cpu_usage, memory_usage)
+        console.print(table)
+    except Exception as e:
+        print(f"Error accessing metrics API. Ensure Metrics Server is installed.")
+        print(f"Details: {e}")
+        return
