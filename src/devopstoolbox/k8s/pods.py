@@ -5,7 +5,6 @@ from kubernetes import client
 from kubernetes.client import CustomObjectsApi
 from devopstoolbox.k8s import utils
 
-
 app = typer.Typer(no_args_is_help=True)
 console = Console()
 config = utils.get_kube_config()
@@ -56,20 +55,16 @@ def list_overprovisioning(namespace: str = "default", all_namespaces: bool = Fal
         )
 
         table = Table(title=f"Pods Metrics in {scope}")
-        table.add_section()
         table.add_column("Namespace", style="cyan", justify="center")
         table.add_column("Pod Name", style="cyan", justify="center")
         table.add_column("Container Name", style="green", justify="center")
         table.add_column("CPU Usage", style="green", justify="center")
         table.add_column("Memory Usage", style="green", justify="center")
 
-        print(f"Metrics for pods in namespace '{scope}':")
         for pod in pod_metrics.get("items", []):
             for container in pod["containers"]:
-
-                cpu_usage = float(container["usage"]["cpu"])
-                memory_usage = float(container["usage"]["memory"])
-
+                cpu_usage = utils.parse_cpu(container["usage"]["cpu"])
+                memory_usage = utils.parse_memory(container["usage"]["memory"])
                 table.add_row(scope or "-", pod["metadata"]["name"], container["name"], cpu_usage, memory_usage)
         console.print(table)
     except Exception as e:
