@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "devopstoolbox"
+version = "0.1.0"
+description = "A Python-based CLI toolkit for automating daily DevOps operations."
+requires-python = ">=3.9"
+readme = "README.md"
+authors = [
+  { name = "George Farias", email = "georgesouzafarias@gmail.com" },
+]
+
+dependencies = [
+    "boto3",
+    "kubernetes",
+    "typer",
+    "rich",
+]
+
+[project.scripts]
+devopstoolbox = "devopstoolbox.main:app"

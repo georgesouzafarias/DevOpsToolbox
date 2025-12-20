@@ -1,2 +1,7 @@
-def __main__:
-  print('Banana')
+def main():
+    print('Banana')
+
+
+if __name__ == "__main__":
+    main()
+
