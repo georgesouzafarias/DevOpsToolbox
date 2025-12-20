@@ -1,14 +1,20 @@
 import typer
 from rich import print
+from devopstoolbox.k8s import pods, services
 
-app = typer.Typer()
+__version__ = "DevOpsToolbox v0.1.0"
+
+app = typer.Typer(no_args_is_help=True)
+k8s_app = typer.Typer(no_args_is_help=True)
+
+app.add_typer(k8s_app, name="k8s")
+k8s_app.add_typer(pods.app, name="pods", help="Manager Pods")
+k8s_app.add_typer(services.app, name="services", help="Manager Services")
 
 @app.command()
-def hello(name: str = "DevOps"):
-    """
-    Simple test
-    """
-    print(f"[bold green]Hello {name}![/bold green] Welcome to your DevOpsToolbox.")
+def version():
+    """Show tool version"""
+    print(__version__)
 
 if __name__ == "__main__":
     app()
