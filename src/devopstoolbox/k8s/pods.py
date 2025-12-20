@@ -33,7 +33,7 @@ def list(namespace: str = "default", all_namespaces: bool = False):
             table.add_row(pod.metadata.namespace or "-", pod.metadata.name, str(restart_count))
 
         console.print(table)
-    except
-      print(f"Something was wrong with the kubernets access: err")
+    except Exception as err:
+        console.print(f"[bold red]Error accessing Kubernetes:[/bold red] \n\n{err}")
 
 
