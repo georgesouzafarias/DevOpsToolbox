@@ -1,0 +1,129 @@
+# DevOpsToolbox
+
+A Python-based CLI toolkit for automating daily DevOps operations.
+
+## Features
+
+- **Kubernetes Management**: Manage pods, services, and certificates from the command line
+- **Human-readable Output**: Formatted tables with Rich for clear visualization
+- **Metrics Support**: View CPU and memory usage for pods (requires Metrics Server)
+- **Certificate Management**: List and monitor cert-manager certificates
+
+## Requirements
+
+- Python 3.9+
+- Access to a Kubernetes cluster (kubeconfig configured)
+- Metrics Server (optional, for pod metrics)
+- cert-manager (optional, for certificate management)
+
+## Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/DevOpsToolbox.git
+cd DevOpsToolbox
+
+# Install in development mode
+pip install -e .
+```
+
+## Usage
+
+### General Commands
+
+```bash
+# Show version
+devopstoolbox version
+
+# Show help
+devopstoolbox --help
+```
+
+### Pods Management
+
+```bash
+# List all pods in default namespace
+devopstoolbox k8s pods list
+
+# List all pods in a specific namespace
+devopstoolbox k8s pods list --namespace monitoring
+
+# List all pods across all namespaces
+devopstoolbox k8s pods list --all-namespaces
+
+# List unhealthy pods (not Running or Succeeded)
+devopstoolbox k8s pods unhealthy --all-namespaces
+
+# Show pod metrics (CPU and memory usage)
+devopstoolbox k8s pods metrics --namespace default
+```
+
+### Services Management
+
+```bash
+# List services in default namespace
+devopstoolbox k8s services list
+
+# List services in a specific namespace
+devopstoolbox k8s services list --namespace kube-system
+
+# List all services across all namespaces
+devopstoolbox k8s services list --all-namespaces
+```
+
+### Certificates Management
+
+```bash
+# List certificates in default namespace
+devopstoolbox k8s certificates list
+
+# List certificates in a specific namespace
+devopstoolbox k8s certificates list --namespace cert-manager
+
+# List certificates that are not ready
+devopstoolbox k8s certificates not-ready --namespace default
+```
+
+## Command Reference
+
+| Command                                    | Description                                |
+| ------------------------------------------ | ------------------------------------------ |
+| `devopstoolbox version`                    | Show tool version                          |
+| `devopstoolbox k8s pods list`              | List pods with status and restart count    |
+| `devopstoolbox k8s pods metrics`           | Show CPU and memory usage per container    |
+| `devopstoolbox k8s pods unhealthy`         | List pods not in Running/Succeeded state   |
+| `devopstoolbox k8s services list`          | List services with type and traffic policy |
+| `devopstoolbox k8s certificates list`      | List cert-manager certificates             |
+| `devopstoolbox k8s certificates not-ready` | List certificates not in Ready state       |
+
+## Dependencies
+
+- boto3
+- kubernetes
+- typer
+- rich
+
+## Project Structure
+
+```
+DevOpsToolbox/
+├── src/
+│   └── devopstoolbox/
+│       ├── main.py           # CLI entry point
+│       └── k8s/
+│           ├── pods.py       # Pod management commands
+│           ├── services.py   # Service management commands
+│           ├── certificates.py # Certificate management commands
+│           └── utils.py      # Helper functions
+├── tests/
+├── pyproject.toml
+└── README.md
+```
+
+## License
+
+See LICENSE file for details.
+
+## Author
+
+George Farias (georgesouzafarias@gmail.com)
