@@ -103,6 +103,62 @@ devopstoolbox k8s certificates not-ready --namespace default
 - typer
 - rich
 
+## Development
+
+### Setup
+
+```bash
+# Install with dev dependencies
+pip install -e ".[dev]"
+
+# Install the pre-push git hook
+./scripts/install-hooks.sh
+```
+
+### Running Tests
+
+```bash
+# Run all tests
+pytest
+
+# Run with verbose output
+pytest -v
+
+# Run with coverage report
+pytest --cov=devopstoolbox --cov-report=html
+
+# Run specific test file
+pytest tests/test_pods.py
+
+# Run specific test class
+pytest tests/test_pods.py::TestPodsListCommand
+
+# Run specific test
+pytest tests/test_pods.py::TestPodsListCommand::test_list_pods_default_namespace
+```
+
+### Code Quality
+
+The project uses automated testing with pytest. All tests must pass before pushing code.
+
+### Git Hooks
+
+A pre-push hook automatically runs tests before each push to ensure code quality:
+
+```bash
+# Install the hook (one-time setup)
+./scripts/install-hooks.sh
+
+# The hook will run automatically on git push
+# If tests fail, the push will be rejected
+```
+
+To bypass the hook (not recommended):
+
+```bash
+git push --no-verify
+```
+
 ## Project Structure
 
 ```
@@ -115,7 +171,14 @@ DevOpsToolbox/
 │           ├── services.py   # Service management commands
 │           ├── certificates.py # Certificate management commands
 │           └── utils.py      # Helper functions
-├── tests/
+├── tests/                     # Test suite
+│   ├── test_pods.py
+│   ├── test_services.py
+│   ├── test_certificates.py
+│   ├── test_utils.py
+│   └── test_main.py
+├── scripts/
+│   └── install-hooks.sh      # Git hooks installer
 ├── pyproject.toml
 └── README.md
 ```
