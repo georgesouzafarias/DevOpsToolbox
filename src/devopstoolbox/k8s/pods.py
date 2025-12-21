@@ -1,0 +1,107 @@
+import typer
+from rich.console import Console
+from rich.table import Table
+from kubernetes import client
+from kubernetes.client import CustomObjectsApi
+from devopstoolbox.k8s import utils
+
+app = typer.Typer(no_args_is_help=True)
+console = Console()
+config = utils.get_kube_config()
+custom_api = CustomObjectsApi()
+
+@app.command()
+def list(namespace: str = "default", all_namespaces: bool = False):
+    """List pods"""
+    scope = "all namespaces" if all_namespaces else f"namespace {namespace}"
+    console.print(f"[bold blue]Listing pods in {scope}...[/bold blue]")
+
+    try:
+        v1 = client.CoreV1Api()
+        pods = (
+            v1.list_pod_for_all_namespaces(watch=False)
+            if all_namespaces
+            else v1.list_namespaced_pod(namespace, watch=False)
+        )
+
+        table = Table(title=f"Pods in {scope}")
+        table.add_column("Namespace", style="cyan", justify="center")
+        table.add_column("Pod Name", style="green", justify="center")
+        table.add_column("Status", style="green", justify="center")
+        table.add_column("Restart Count", justify="center")
+
+        for pod in pods.items:
+            statuses = pod.status.container_statuses or []
+            restart_count = sum((status.restart_count or 0) for status in statuses)
+            table.add_row(pod.metadata.namespace or "-", pod.metadata.name, pod.status.phase, str(restart_count))
+
+        console.print(table)
+    except Exception as err:
+        console.print(f"[bold red]Error accessing Kubernetes:[/bold red] \n\n{err}")
+
+@app.command()
+def metrics(namespace: str = "default"):
+    """
+    Retrieves CPU and memory usage metrics for all pods in a given namespace.
+    """
+    console.print(f"[bold blue]Listing pods in {namespace}...[/bold blue]")
+
+    try:
+        pod_metrics = custom_api.list_namespaced_custom_object(
+            group="metrics.k8s.io",
+            version="v1beta1",
+            namespace=namespace,
+            plural="pods"
+        )
+
+        table = Table(title=f"Pods Metrics in {namespace}")
+        table.add_column("Namespace", style="cyan", justify="center")
+        table.add_column("Pod Name", style="cyan", justify="center")
+        table.add_column("Container Name", style="green", justify="center")
+        table.add_column("CPU Usage", style="green", justify="center")
+        table.add_column("Memory Usage", style="green", justify="center")
+
+        for pod in pod_metrics.get("items", []):
+            pod_name = pod.get("metadata", {}).get("name", "-")
+            for container in pod.get("containers", []):
+                usage = container.get("usage", {})
+                cpu_usage = utils.parse_cpu(usage.get("cpu", "0n"))
+                memory_usage = utils.parse_memory(usage.get("memory", "0Ki"))
+                table.add_row(namespace or "-", pod_name, container.get("name", "-"), cpu_usage, memory_usage)
+        console.print(table)
+    except Exception as e:
+        print("Error accessing metrics API. Ensure Metrics Server is installed.")
+        print(f"Details: {e}")
+        return
+
+@app.command()
+def unhealthy(namespace: str = "default", all_namespaces: bool = False):
+    """
+    List pods with issues (not in Running or Succeeded state).
+    """
+    scope = "all namespaces" if all_namespaces else f"namespace {namespace}"
+    console.print(f"[bold blue]Listing Issued pods in {scope}...[/bold blue]")
+
+    try:
+        v1 = client.CoreV1Api()
+        pods = (
+            v1.list_pod_for_all_namespaces(watch=False)
+            if all_namespaces
+            else v1.list_namespaced_pod(namespace, watch=False)
+        )
+
+        table = Table(title=f"Pods in {scope}")
+        table.add_column("Namespace", style="cyan", justify="center")
+        table.add_column("Pod Name", style="green", justify="center")
+        table.add_column("Status", style="green", justify="center")
+        table.add_column("Restart Count", justify="center")
+
+        for pod in pods.items:
+            statuses = pod.status.container_statuses or []
+            restart_count = sum((status.restart_count or 0) for status in statuses)
+            if pod.status.phase not in ("Running", "Succeeded"):
+                table.add_row(pod.metadata.namespace or "-", pod.metadata.name, pod.status.phase, str(restart_count))
+
+        console.print(table)
+    except Exception as err:
+        console.print(f"[bold red]Error accessing Kubernetes:[/bold red] \n\n{err}")
