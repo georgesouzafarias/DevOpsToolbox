@@ -10,7 +10,7 @@ config.load_kube_config()
 
 @app.command()
 def list(namespace: str = "default", all_namespaces: bool = False):
-    """List pods"""
+    """List services"""
     scope = "all namespaces" if all_namespaces else f"namespace {namespace}"
     console.print(f"[bold blue]Listing pods in {scope}...[/bold blue]")
 
