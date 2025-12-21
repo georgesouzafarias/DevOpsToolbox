@@ -1,25 +1,21 @@
 import typer
-from rich.console import Console
-from rich.table import Table
 from kubernetes import config
 from kubernetes.client import CustomObjectsApi
-
+from rich.console import Console
+from rich.table import Table
 
 app = typer.Typer(no_args_is_help=True)
 console = Console()
 config.load_kube_config()
 custom_api = CustomObjectsApi()
 
+
 @app.command()
 def list(namespace: str = "default"):
-    """
-    """
+    """ """
     try:
         certificates = custom_api.list_namespaced_custom_object(
-            group="cert-manager.io",
-            version="v1",
-            namespace=namespace,
-            plural="certificates"
+            group="cert-manager.io", version="v1", namespace=namespace, plural="certificates"
         )
 
         table = Table(title=f"List Certificates in {namespace}")
@@ -40,16 +36,13 @@ def list(namespace: str = "default"):
         print(f"Details: {e}")
         return
 
+
 @app.command()
 def not_ready(namespace: str = "default"):
-    """
-    """
+    """ """
     try:
         certificates = custom_api.list_namespaced_custom_object(
-            group="cert-manager.io",
-            version="v1",
-            namespace=namespace,
-            plural="certificates"
+            group="cert-manager.io", version="v1", namespace=namespace, plural="certificates"
         )
 
         table = Table(title=f"List Certificates in {namespace}")

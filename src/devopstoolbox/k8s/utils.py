@@ -1,6 +1,7 @@
-from kubernetes import client, config, watch
-from kubernetes.client import CustomObjectsApi
 import re
+
+from kubernetes import config
+
 
 def get_kube_config():
     """Get Kube Config"""
@@ -8,6 +9,7 @@ def get_kube_config():
         return config.load_kube_config()
     except config.ConfigException:
         return config.load_incluster_config()
+
 
 def parse_cpu(cpu_str: str) -> str:
     """Convert Kubernetes CPU units to human-readable format (millicores)."""

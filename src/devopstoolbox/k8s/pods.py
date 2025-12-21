@@ -1,14 +1,16 @@
 import typer
-from rich.console import Console
-from rich.table import Table
 from kubernetes import client
 from kubernetes.client import CustomObjectsApi
+from rich.console import Console
+from rich.table import Table
+
 from devopstoolbox.k8s import utils
 
 app = typer.Typer(no_args_is_help=True)
 console = Console()
 config = utils.get_kube_config()
 custom_api = CustomObjectsApi()
+
 
 @app.command()
 def list(namespace: str = "default", all_namespaces: bool = False):
@@ -39,6 +41,7 @@ def list(namespace: str = "default", all_namespaces: bool = False):
     except Exception as err:
         console.print(f"[bold red]Error accessing Kubernetes:[/bold red] \n\n{err}")
 
+
 @app.command()
 def metrics(namespace: str = "default"):
     """
@@ -48,10 +51,7 @@ def metrics(namespace: str = "default"):
 
     try:
         pod_metrics = custom_api.list_namespaced_custom_object(
-            group="metrics.k8s.io",
-            version="v1beta1",
-            namespace=namespace,
-            plural="pods"
+            group="metrics.k8s.io", version="v1beta1", namespace=namespace, plural="pods"
         )
 
         table = Table(title=f"Pods Metrics in {namespace}")
@@ -73,6 +73,7 @@ def metrics(namespace: str = "default"):
         print("Error accessing metrics API. Ensure Metrics Server is installed.")
         print(f"Details: {e}")
         return
+
 
 @app.command()
 def unhealthy(namespace: str = "default", all_namespaces: bool = False):

@@ -1,11 +1,13 @@
 """Tests for devopstoolbox.k8s.services module."""
 
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
 
 # Patch before importing the module
 with patch("kubernetes.config.load_kube_config"):
     from typer.testing import CliRunner
+
     from devopstoolbox.k8s import services
 
 

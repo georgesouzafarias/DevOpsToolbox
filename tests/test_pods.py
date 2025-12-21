@@ -1,11 +1,13 @@
 """Tests for devopstoolbox.k8s.pods module."""
 
+from unittest.mock import Mock, patch
+
 import pytest
-from unittest.mock import Mock, patch, MagicMock
 
 # Patch before importing the module
 with patch("devopstoolbox.k8s.utils.get_kube_config"):
     from typer.testing import CliRunner
+
     from devopstoolbox.k8s import pods
 
 
@@ -173,15 +175,7 @@ class TestPodsMetricsCommand:
             "items": [
                 {
                     "metadata": {"name": "test-pod"},
-                    "containers": [
-                        {
-                            "name": "main",
-                            "usage": {
-                                "cpu": "100000000n",
-                                "memory": "128Mi"
-                            }
-                        }
-                    ]
+                    "containers": [{"name": "main", "usage": {"cpu": "100000000n", "memory": "128Mi"}}],
                 }
             ]
         }
