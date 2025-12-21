@@ -1,8 +1,7 @@
 import typer
+from kubernetes import client, config
 from rich.console import Console
 from rich.table import Table
-from kubernetes import client, config, watch
-
 
 app = typer.Typer(no_args_is_help=True)
 console = Console()
@@ -29,7 +28,8 @@ def list(namespace: str = "default", all_namespaces: bool = False):
         table.add_column("Internal Traffic Policy", justify="center")
 
         for service in services.items:
-            table.add_row(service.metadata.namespace or "-", service.metadata.name, service.spec.type, service.spec.internal_traffic_policy or "none")
+            table.add_row(service.metadata.namespace or "-",
+                          service.metadata.name, service.spec.type, service.spec.internal_traffic_policy or "none")
 
         console.print(table)
     except Exception as err:

@@ -1,6 +1,7 @@
-from kubernetes import client, config, watch
-from kubernetes.client import CustomObjectsApi
 import re
+
+from kubernetes import config
+
 
 def get_kube_config():
     """Get Kube Config"""

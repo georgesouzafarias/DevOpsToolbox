@@ -1,6 +1,5 @@
 """Tests for devopstoolbox.k8s.utils module."""
 
-import pytest
 from devopstoolbox.k8s.utils import parse_cpu, parse_memory
 
 

@@ -1,8 +1,9 @@
 import typer
-from rich.console import Console
-from rich.table import Table
 from kubernetes import client
 from kubernetes.client import CustomObjectsApi
+from rich.console import Console
+from rich.table import Table
+
 from devopstoolbox.k8s import utils
 
 app = typer.Typer(no_args_is_help=True)

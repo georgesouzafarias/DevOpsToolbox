@@ -1,7 +1,7 @@
 """Tests for devopstoolbox.main module."""
 
-import pytest
 from unittest.mock import patch
+
 from typer.testing import CliRunner
 
 # Patch before importing the modules
