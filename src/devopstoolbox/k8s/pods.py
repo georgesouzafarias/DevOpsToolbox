@@ -39,22 +39,21 @@ def list(namespace: str = "default", all_namespaces: bool = False):
         console.print(f"[bold red]Error accessing Kubernetes:[/bold red] \n\n{err}")
 
 @app.command()
-def list_overprovisioning(namespace: str = "default", all_namespaces: bool = False):
+def get_pods_metrics(namespace: str = "default"):
     """
     Retrieves CPU and memory usage metrics for all pods in a given namespace.
     """
-    scope = "all_namespaces" if all_namespaces else namespace
-    console.print(f"[bold blue]Listing pods in {scope}...[/bold blue]")
+    console.print(f"[bold blue]Listing pods in {namespace}...[/bold blue]")
 
     try:
         pod_metrics = custom_api.list_namespaced_custom_object(
             group="metrics.k8s.io",
             version="v1beta1",
-            namespace=scope,
+            namespace=namespace,
             plural="pods"
         )
 
-        table = Table(title=f"Pods Metrics in {scope}")
+        table = Table(title=f"Pods Metrics in {namespace}")
         table.add_column("Namespace", style="cyan", justify="center")
         table.add_column("Pod Name", style="cyan", justify="center")
         table.add_column("Container Name", style="green", justify="center")
@@ -65,7 +64,7 @@ def list_overprovisioning(namespace: str = "default", all_namespaces: bool = Fal
             for container in pod["containers"]:
                 cpu_usage = utils.parse_cpu(container["usage"]["cpu"])
                 memory_usage = utils.parse_memory(container["usage"]["memory"])
-                table.add_row(scope or "-", pod["metadata"]["name"], container["name"], cpu_usage, memory_usage)
+                table.add_row(namespace or "-", pod["metadata"]["name"], container["name"], cpu_usage, memory_usage)
         console.print(table)
     except Exception as e:
         print(f"Error accessing metrics API. Ensure Metrics Server is installed.")
