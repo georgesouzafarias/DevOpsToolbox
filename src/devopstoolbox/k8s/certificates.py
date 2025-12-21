@@ -36,7 +36,7 @@ def list(namespace: str = "default"):
             table.add_row(namespace, certificate["metadata"]["name"], renewal_time, condition_type)
         console.print(table)
     except Exception as e:
-        print(f"Error accessing Cert API. Ensure Certificate Server is installed.")
+        print("Error accessing Cert API. Ensure Certificate Server is installed.")
         print(f"Details: {e}")
         return
 
@@ -67,6 +67,6 @@ def not_ready(namespace: str = "default"):
                 table.add_row(namespace, certificate["metadata"]["name"], renewal_time, condition_type)
         console.print(table)
     except Exception as e:
-        print(f"Error accessing Cert API. Ensure Certificate Server is installed.")
+        print("Error accessing Cert API. Ensure Certificate Server is installed.")
         print(f"Details: {e}")
         return

@@ -70,7 +70,7 @@ def metrics(namespace: str = "default"):
                 table.add_row(namespace or "-", pod_name, container.get("name", "-"), cpu_usage, memory_usage)
         console.print(table)
     except Exception as e:
-        print(f"Error accessing metrics API. Ensure Metrics Server is installed.")
+        print("Error accessing metrics API. Ensure Metrics Server is installed.")
         print(f"Details: {e}")
         return
 
