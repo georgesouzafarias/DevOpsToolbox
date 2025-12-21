@@ -175,15 +175,7 @@ class TestPodsMetricsCommand:
             "items": [
                 {
                     "metadata": {"name": "test-pod"},
-                    "containers": [
-                        {
-                            "name": "main",
-                            "usage": {
-                                "cpu": "100000000n",
-                                "memory": "128Mi"
-                            }
-                        }
-                    ]
+                    "containers": [{"name": "main", "usage": {"cpu": "100000000n", "memory": "128Mi"}}],
                 }
             ]
         }

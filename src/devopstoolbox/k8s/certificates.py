@@ -9,16 +9,13 @@ console = Console()
 config.load_kube_config()
 custom_api = CustomObjectsApi()
 
+
 @app.command()
 def list(namespace: str = "default"):
-    """
-    """
+    """ """
     try:
         certificates = custom_api.list_namespaced_custom_object(
-            group="cert-manager.io",
-            version="v1",
-            namespace=namespace,
-            plural="certificates"
+            group="cert-manager.io", version="v1", namespace=namespace, plural="certificates"
         )
 
         table = Table(title=f"List Certificates in {namespace}")
@@ -39,16 +36,13 @@ def list(namespace: str = "default"):
         print(f"Details: {e}")
         return
 
+
 @app.command()
 def not_ready(namespace: str = "default"):
-    """
-    """
+    """ """
     try:
         certificates = custom_api.list_namespaced_custom_object(
-            group="cert-manager.io",
-            version="v1",
-            namespace=namespace,
-            plural="certificates"
+            group="cert-manager.io", version="v1", namespace=namespace, plural="certificates"
         )
 
         table = Table(title=f"List Certificates in {namespace}")

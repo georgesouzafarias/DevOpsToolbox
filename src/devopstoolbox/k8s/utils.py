@@ -10,6 +10,7 @@ def get_kube_config():
     except config.ConfigException:
         return config.load_incluster_config()
 
+
 def parse_cpu(cpu_str: str) -> str:
     """Convert Kubernetes CPU units to human-readable format (millicores)."""
     if cpu_str.endswith("n"):

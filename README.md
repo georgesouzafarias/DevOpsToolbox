@@ -183,6 +183,24 @@ DevOpsToolbox/
 └── README.md
 ```
 
+## Roadmap
+
+| Feature | Description | Status |
+| ------- | ----------- | ------ |
+| `k8s deployments` | List, restart, and scale deployments | Planned |
+| `k8s nodes` | List nodes with status, capacity, and conditions | Planned |
+| `k8s events` | Show cluster events for debugging | Planned |
+| `k8s logs` | Tail pod logs with filtering | Planned |
+| `k8s pods overprovisioned` | List pods with unused CPU/memory requests | Planned |
+| `k8s pods top` | Show pods sorted by resource consumption | Planned |
+| `k8s resources quota` | Show namespace resource quotas and usage | Planned |
+| `k8s ingress list` | List ingresses with hosts and backends | Planned |
+| `k8s secrets expiring` | List secrets (TLS) expiring soon | Planned |
+| `k8s configmaps unused` | Find configmaps not mounted by any pod | Planned |
+| `k8s pvc list` | List PVCs with capacity and status | Planned |
+| `k8s jobs failed` | List failed jobs with error reasons | Planned |
+| `k8s cronjobs list` | List cronjobs with schedule and last run | Planned |
+
 ## License
 
 See LICENSE file for details.

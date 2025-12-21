@@ -13,10 +13,12 @@ k8s_app.add_typer(pods.app, name="pods", help="Manager Pods")
 k8s_app.add_typer(services.app, name="services", help="Manager Services")
 k8s_app.add_typer(certificates.app, name="certificates", help="Manager Certificates")
 
+
 @app.command()
 def version():
     """Show tool version"""
     print(__version__)
+
 
 if __name__ == "__main__":
     app()

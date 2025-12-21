@@ -11,6 +11,7 @@ console = Console()
 config = utils.get_kube_config()
 custom_api = CustomObjectsApi()
 
+
 @app.command()
 def list(namespace: str = "default", all_namespaces: bool = False):
     """List pods"""
@@ -40,6 +41,7 @@ def list(namespace: str = "default", all_namespaces: bool = False):
     except Exception as err:
         console.print(f"[bold red]Error accessing Kubernetes:[/bold red] \n\n{err}")
 
+
 @app.command()
 def metrics(namespace: str = "default"):
     """
@@ -49,10 +51,7 @@ def metrics(namespace: str = "default"):
 
     try:
         pod_metrics = custom_api.list_namespaced_custom_object(
-            group="metrics.k8s.io",
-            version="v1beta1",
-            namespace=namespace,
-            plural="pods"
+            group="metrics.k8s.io", version="v1beta1", namespace=namespace, plural="pods"
         )
 
         table = Table(title=f"Pods Metrics in {namespace}")
@@ -74,6 +73,7 @@ def metrics(namespace: str = "default"):
         print("Error accessing metrics API. Ensure Metrics Server is installed.")
         print(f"Details: {e}")
         return
+
 
 @app.command()
 def unhealthy(namespace: str = "default", all_namespaces: bool = False):
