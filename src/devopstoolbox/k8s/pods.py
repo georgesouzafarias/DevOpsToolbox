@@ -62,10 +62,12 @@ def metrics(namespace: str = "default"):
         table.add_column("Memory Usage", style="green", justify="center")
 
         for pod in pod_metrics.get("items", []):
-            for container in pod["containers"]:
-                cpu_usage = utils.parse_cpu(container["usage"]["cpu"])
-                memory_usage = utils.parse_memory(container["usage"]["memory"])
-                table.add_row(namespace or "-", pod["metadata"]["name"], container["name"], cpu_usage, memory_usage)
+            pod_name = pod.get("metadata", {}).get("name", "-")
+            for container in pod.get("containers", []):
+                usage = container.get("usage", {})
+                cpu_usage = utils.parse_cpu(usage.get("cpu", "0n"))
+                memory_usage = utils.parse_memory(usage.get("memory", "0Ki"))
+                table.add_row(namespace or "-", pod_name, container.get("name", "-"), cpu_usage, memory_usage)
         console.print(table)
     except Exception as e:
         print(f"Error accessing metrics API. Ensure Metrics Server is installed.")
