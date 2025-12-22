@@ -11,6 +11,7 @@ console = Console()
 config = utils.get_kube_config()
 custom_api = CustomObjectsApi()
 
+
 @app.command()
 def list(namespace: str = "default", all_namespaces: bool = False):
     """List pods"""
@@ -94,8 +95,8 @@ def metrics(namespace: str = "default", all_namespaces: bool = False):
             pod_name = pod.metadata.name
             for container in pod.spec.containers:
                 resources = container.resources
-                limits = getattr(resources, 'limits', None) or {}
-                requests = getattr(resources, 'requests', None) or {}
+                limits = getattr(resources, "limits", None) or {}
+                requests = getattr(resources, "requests", None) or {}
 
                 key = (pod_ns, pod_name, container.name)
                 usage = metrics_by_container.get(key, {})
