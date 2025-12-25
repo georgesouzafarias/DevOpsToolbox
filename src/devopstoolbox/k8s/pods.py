@@ -102,8 +102,8 @@ def metrics(namespace: str = "default", all_namespaces: bool = False):
 
                 key = (pod_ns, pod_name, container.name)
                 usage = metrics_by_container.get(key, {})
-                cpu_percent_usage = utils.calculate_cpu_percentage(usage.get('cpu', None), limits.get('cpu', None))
-                memory_percent_usage =  utils.calculate_memory_percentage(usage.get('memory', None), limits.get('memory', None))
+                cpu_percent_usage = utils.calculate_cpu_percentage(usage.get('cpu'), limits.get('cpu'))
+                memory_percent_usage = utils.calculate_memory_percentage(usage.get('memory'), limits.get('memory'))
                 table.add_row(
                     pod_ns,
                     pod_name,

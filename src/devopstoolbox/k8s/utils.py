@@ -55,7 +55,6 @@ def parse_memory(mem_str: str, return_number: bool = False):
 
 
 def calculate_cpu_percentage(usage, limit):
-    print(f"CPU: {limit}")
     if limit is None:
         return "-"
     else:
@@ -63,7 +62,6 @@ def calculate_cpu_percentage(usage, limit):
         return f"{result:.2f}%"
 
 def calculate_memory_percentage(usage, limit):
-    print(f"Memory: {limit}")
     if limit is None:
         return "-"
     else:
