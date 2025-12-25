@@ -86,9 +86,11 @@ def metrics(namespace: str = "default", all_namespaces: bool = False):
         table.add_column("CPU Req", style="green", justify="center")
         table.add_column("CPU Limit", style="yellow", justify="center")
         table.add_column("CPU Usage", style="magenta", justify="center")
+        table.add_column("CPU Usage %", style="magenta", justify="center")
         table.add_column("Mem Req", style="green", justify="center")
         table.add_column("Mem Limit", style="yellow", justify="center")
         table.add_column("Mem Usage", style="magenta", justify="center")
+        table.add_column("Mem Usage %", style="magenta", justify="center")
 
         for pod in pods.items:
             pod_ns = pod.metadata.namespace or "-"
@@ -100,7 +102,8 @@ def metrics(namespace: str = "default", all_namespaces: bool = False):
 
                 key = (pod_ns, pod_name, container.name)
                 usage = metrics_by_container.get(key, {})
-
+                cpu_percent_usage = utils.calculate_cpu_percentage(usage.get('cpu', None), limits.get('cpu', None))
+                memory_percent_usage =  utils.calculate_memory_percentage(usage.get('memory', None), limits.get('memory', None))
                 table.add_row(
                     pod_ns,
                     pod_name,
@@ -108,9 +111,11 @@ def metrics(namespace: str = "default", all_namespaces: bool = False):
                     requests.get("cpu", "-"),
                     limits.get("cpu", "-"),
                     utils.parse_cpu(usage.get("cpu", "0n")) if usage else "-",
+                    cpu_percent_usage,
                     requests.get("memory", "-"),
                     limits.get("memory", "-"),
                     utils.parse_memory(usage.get("memory", "0Ki")) if usage else "-",
+                    memory_percent_usage,
                 )
 
         console.print(table)
