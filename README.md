@@ -1,5 +1,10 @@
 # DevOpsToolbox
 
+[![CI](https://github.com/georgesouzafarias/DevOpsToolbox/actions/workflows/ci.yml/badge.svg)](https://github.com/georgesouzafarias/DevOpsToolbox/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/georgesouzafarias/DevOpsToolbox/branch/main/graph/badge.svg)](https://codecov.io/gh/georgesouzafarias/DevOpsToolbox)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/github/license/georgesouzafarias/DevOpsToolbox)](LICENSE)
+
 A Python-based CLI toolkit for automating daily DevOps operations.
 
 ## Features
@@ -20,7 +25,7 @@ A Python-based CLI toolkit for automating daily DevOps operations.
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/DevOpsToolbox.git
+git clone https://github.com/georgesouzafarias/DevOpsToolbox.git
 cd DevOpsToolbox
 
 # Install in development mode
@@ -103,6 +108,10 @@ devopstoolbox k8s certificates not-ready --namespace default
 - typer
 - rich
 
+## Contributing
+
+Contributions are welcome! Please read our [Contributing Guidelines](CONTRIBUTING.md) before submitting a pull request.
+
 ## Development
 
 ### Setup
@@ -139,7 +148,20 @@ pytest tests/test_pods.py::TestPodsListCommand::test_list_pods_default_namespace
 
 ### Code Quality
 
-The project uses automated testing with pytest. All tests must pass before pushing code.
+The project uses Ruff for linting and formatting, and pytest for testing.
+
+```bash
+# Check for linting issues
+ruff check .
+
+# Fix auto-fixable issues
+ruff check --fix .
+
+# Format code
+ruff format .
+```
+
+All tests must pass before pushing code.
 
 ### Git Hooks
 
@@ -163,6 +185,13 @@ git push --no-verify
 
 ```
 DevOpsToolbox/
+├── .github/
+│   ├── workflows/
+│   │   └── ci.yml            # CI pipeline (lint + test)
+│   ├── ISSUE_TEMPLATE/
+│   │   ├── bug.md            # Bug report template
+│   │   └── feature.md        # Feature request template
+│   └── pull_request_template.md
 ├── src/
 │   └── devopstoolbox/
 │       ├── main.py           # CLI entry point
@@ -171,7 +200,7 @@ DevOpsToolbox/
 │           ├── services.py   # Service management commands
 │           ├── certificates.py # Certificate management commands
 │           └── utils.py      # Helper functions
-├── tests/                     # Test suite
+├── tests/                    # Test suite
 │   ├── test_pods.py
 │   ├── test_services.py
 │   ├── test_certificates.py
@@ -179,7 +208,8 @@ DevOpsToolbox/
 │   └── test_main.py
 ├── scripts/
 │   └── install-hooks.sh      # Git hooks installer
-├── pyproject.toml
+├── CONTRIBUTING.md           # Contribution guidelines
+├── pyproject.toml            # Project configuration
 └── README.md
 ```
 
