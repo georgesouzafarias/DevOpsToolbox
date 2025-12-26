@@ -4,7 +4,6 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-# Patch before importing the module
 with patch("devopstoolbox.k8s.utils.get_kube_config"):
     from typer.testing import CliRunner
 

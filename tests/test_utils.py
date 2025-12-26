@@ -1,6 +1,6 @@
 """Tests for devopstoolbox.k8s.utils module."""
 
-from devopstoolbox.k8s.utils import parse_cpu, parse_memory, calculate_cpu_percentage, calculate_memory_percentage, get_kube_config
+from devopstoolbox.k8s.utils import calculate_cpu_percentage, calculate_memory_percentage, parse_cpu, parse_memory
 
 
 class TestParseCpu:
