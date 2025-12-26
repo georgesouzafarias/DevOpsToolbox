@@ -41,6 +41,7 @@ def mock_unhealthy_pod():
 
     return pod
 
+
 @pytest.fixture
 def mock_container():
     container = Mock()
@@ -49,15 +50,14 @@ def mock_container():
     container.resources.limits = {"cpu": "200m", "memory": "256Mi"}
     return container
 
+
 @pytest.fixture
 def mock_pod_metrics():
     return {
         "items": [
             {
                 "metadata": {"name": "test-pod", "namespace": "default"},
-                "containers": [
-                    {"name": "main", "usage": {"cpu": "50m", "memory": "64Mi"}}
-                ],
+                "containers": [{"name": "main", "usage": {"cpu": "50m", "memory": "64Mi"}}],
             }
         ]
     }
