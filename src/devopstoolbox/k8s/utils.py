@@ -61,8 +61,8 @@ def calculate_cpu_percentage(usage, limit):
         return f"{result:.2f}%"
 
 def calculate_memory_percentage(usage, limit):
-    if usage is None or limit is None or not usage[:-1].isdigit() or not limit[:-1].isdigit():
+    if usage is None or limit is None or not usage[:-2].isdigit() or not limit[:-2].isdigit():
         return "-"
     else:
-        result = parse_memory(usage, return_number=True) / parse_memory(limit, return_number=True)
+        result = parse_memory(usage, return_number=True) / parse_memory(limit, return_number=True) * 100
         return f"{result:.2f}%"

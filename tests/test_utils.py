@@ -1,6 +1,6 @@
 """Tests for devopstoolbox.k8s.utils module."""
 
-from devopstoolbox.k8s.utils import parse_cpu, parse_memory, calculate_cpu_percentage, calculate_memory_percentage
+from devopstoolbox.k8s.utils import parse_cpu, parse_memory, calculate_cpu_percentage, calculate_memory_percentage, get_kube_config
 
 
 class TestParseCpu:
@@ -102,6 +102,26 @@ class TestMemoryPercentage:
         assert calculate_memory_percentage(None, 1000) == "-"
         assert calculate_memory_percentage(100, None) == "-"
     def test_calculate_invalid(self):
-        assert calculate_cpu_percentage('1000', 'x') == "-"
-        assert calculate_cpu_percentage('x', '1000') == "-"
-        assert calculate_cpu_percentage('x', 'x') == "-"
+        assert calculate_memory_percentage('1000', 'x') == "-"
+        assert calculate_memory_percentage('x', '1000') == "-"
+        assert calculate_memory_percentage('x', 'x') == "-"
+    def test_alculate_kibibytes(self):
+        assert calculate_memory_percentage('1024Ki', '1024Ki') == '100.00%'
+        assert calculate_memory_percentage('1024Ki', '512Ki') == '200.00%'
+        assert calculate_memory_percentage('512Ki', '1024Ki') == '50.00%'
+    def test_calculate_parse_mebibytes(self):
+        assert calculate_memory_percentage('1024Mi', '1024Mi') == '100.00%'
+        assert calculate_memory_percentage('1024Mi', '512Mi') == '200.00%'
+        assert calculate_memory_percentage('512Mi', '1024Mi') == '50.00%'
+    def test_calculate_parse_gibibytes(self):
+        assert calculate_memory_percentage('1024Gi', '1024Gi') == '100.00%'
+        assert calculate_memory_percentage('1024Gi', '512Gi') == '200.00%'
+        assert calculate_memory_percentage('512Gi', '1024Gi') == '50.00%'
+    def test_calculate_parse_tebibytes(self):
+        assert calculate_memory_percentage('1024Ti', '1024Ti') == '100.00%'
+        assert calculate_memory_percentage('1024Ti', '512Ti') == '200.00%'
+        assert calculate_memory_percentage('512Ti', '1024Ti') == '50.00%'
+    def test_calculate_parse_bytes(self):
+        assert calculate_memory_percentage('1024', '1024') == '100.00%'
+        assert calculate_memory_percentage('1024', '512') == '200.00%'
+        assert calculate_memory_percentage('512', '1024') == '50.00%'
