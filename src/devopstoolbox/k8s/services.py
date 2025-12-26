@@ -16,11 +16,7 @@ def list(namespace: str = "default", all_namespaces: bool = False):
 
     try:
         v1 = client.CoreV1Api()
-        services = (
-            v1.list_service_for_all_namespaces(watch=False)
-            if all_namespaces
-            else v1.list_namespaced_service(namespace, watch=False)
-        )
+        services = v1.list_service_for_all_namespaces(watch=False) if all_namespaces else v1.list_namespaced_service(namespace, watch=False)
 
         table = Table(title=f"Pods in {scope}")
         table.add_column("Namespace", style="cyan", justify="center")

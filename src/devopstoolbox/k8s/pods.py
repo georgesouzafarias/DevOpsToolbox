@@ -20,11 +20,7 @@ def list(namespace: str = "default", all_namespaces: bool = False):
 
     try:
         v1 = client.CoreV1Api()
-        pods = (
-            v1.list_pod_for_all_namespaces(watch=False)
-            if all_namespaces
-            else v1.list_namespaced_pod(namespace, watch=False)
-        )
+        pods = v1.list_pod_for_all_namespaces(watch=False) if all_namespaces else v1.list_namespaced_pod(namespace, watch=False)
 
         table = Table(title=f"Pods in {scope}")
         table.add_column("Namespace", style="cyan", justify="center")
@@ -43,36 +39,76 @@ def list(namespace: str = "default", all_namespaces: bool = False):
 
 
 @app.command()
-def metrics(namespace: str = "default"):
+def metrics(namespace: str = "default", all_namespaces: bool = False):
     """
-    Retrieves CPU and memory usage metrics for all pods in a given namespace.
+    Retrieves CPU and memory resources (requests, limits, usage) for all pods.
     """
-    console.print(f"[bold blue]Listing pods in {namespace}...[/bold blue]")
+    scope = "all namespaces" if all_namespaces else f"namespace {namespace}"
+    console.print(f"[bold blue]Listing pod resources in {scope}...[/bold blue]")
 
+    metrics_by_container = {}
     try:
-        pod_metrics = custom_api.list_namespaced_custom_object(
-            group="metrics.k8s.io", version="v1beta1", namespace=namespace, plural="pods"
-        )
-
-        table = Table(title=f"Pods Metrics in {namespace}")
-        table.add_column("Namespace", style="cyan", justify="center")
-        table.add_column("Pod Name", style="cyan", justify="center")
-        table.add_column("Container Name", style="green", justify="center")
-        table.add_column("CPU Usage", style="green", justify="center")
-        table.add_column("Memory Usage", style="green", justify="center")
+        if all_namespaces:
+            pod_metrics = custom_api.list_cluster_custom_object(group="metrics.k8s.io", version="v1beta1", plural="pods")
+        else:
+            pod_metrics = custom_api.list_namespaced_custom_object(group="metrics.k8s.io", version="v1beta1", namespace=namespace, plural="pods")
 
         for pod in pod_metrics.get("items", []):
-            pod_name = pod.get("metadata", {}).get("name", "-")
+            pod_name = pod.get("metadata", {}).get("name", "")
+            pod_ns = pod.get("metadata", {}).get("namespace", "")
             for container in pod.get("containers", []):
-                usage = container.get("usage", {})
-                cpu_usage = utils.parse_cpu(usage.get("cpu", "0n"))
-                memory_usage = utils.parse_memory(usage.get("memory", "0Ki"))
-                table.add_row(namespace or "-", pod_name, container.get("name", "-"), cpu_usage, memory_usage)
-        console.print(table)
+                key = (pod_ns, pod_name, container.get("name"))
+                metrics_by_container[key] = container.get("usage", {})
     except Exception as e:
-        print("Error accessing metrics API. Ensure Metrics Server is installed.")
-        print(f"Details: {e}")
-        return
+        console.print("[yellow]Warning: Could not fetch metrics (Metrics Server may not be installed)[/yellow]")
+        console.print(f"[dim]Details: {e}[/dim]")
+
+    try:
+        v1 = client.CoreV1Api()
+        pods = v1.list_pod_for_all_namespaces(watch=False) if all_namespaces else v1.list_namespaced_pod(namespace, watch=False)
+
+        table = Table(title=f"Pod Resources in {scope}")
+        table.add_column("Namespace", style="cyan", justify="center")
+        table.add_column("Pod Name", style="cyan", justify="center")
+        table.add_column("Container", style="cyan", justify="center")
+        table.add_column("CPU Req", style="green", justify="center")
+        table.add_column("CPU Limit", style="yellow", justify="center")
+        table.add_column("CPU Usage", style="magenta", justify="center")
+        table.add_column("CPU Usage %", style="magenta", justify="center")
+        table.add_column("Mem Req", style="green", justify="center")
+        table.add_column("Mem Limit", style="yellow", justify="center")
+        table.add_column("Mem Usage", style="magenta", justify="center")
+        table.add_column("Mem Usage %", style="magenta", justify="center")
+
+        for pod in pods.items:
+            pod_ns = pod.metadata.namespace or "-"
+            pod_name = pod.metadata.name
+            for container in pod.spec.containers:
+                resources = container.resources
+                limits = getattr(resources, "limits", None) or {}
+                requests = getattr(resources, "requests", None) or {}
+
+                key = (pod_ns, pod_name, container.name)
+                usage = metrics_by_container.get(key, {})
+                cpu_percent_usage = utils.calculate_cpu_percentage(usage.get("cpu"), limits.get("cpu"))
+                memory_percent_usage = utils.calculate_memory_percentage(usage.get("memory"), limits.get("memory"))
+                table.add_row(
+                    pod_ns,
+                    pod_name,
+                    container.name,
+                    requests.get("cpu", "-"),
+                    limits.get("cpu", "-"),
+                    utils.parse_cpu(usage.get("cpu", "0n")) if usage else "-",
+                    cpu_percent_usage,
+                    requests.get("memory", "-"),
+                    limits.get("memory", "-"),
+                    utils.parse_memory(usage.get("memory", "0Ki")) if usage else "-",
+                    memory_percent_usage,
+                )
+
+        console.print(table)
+    except Exception as err:
+        console.print(f"[bold red]Error accessing Kubernetes:[/bold red] \n\n{err}")
 
 
 @app.command()
@@ -85,11 +121,7 @@ def unhealthy(namespace: str = "default", all_namespaces: bool = False):
 
     try:
         v1 = client.CoreV1Api()
-        pods = (
-            v1.list_pod_for_all_namespaces(watch=False)
-            if all_namespaces
-            else v1.list_namespaced_pod(namespace, watch=False)
-        )
+        pods = v1.list_pod_for_all_namespaces(watch=False) if all_namespaces else v1.list_namespaced_pod(namespace, watch=False)
 
         table = Table(title=f"Pods in {scope}")
         table.add_column("Namespace", style="cyan", justify="center")
