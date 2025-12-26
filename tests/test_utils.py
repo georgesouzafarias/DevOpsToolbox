@@ -1,6 +1,6 @@
 """Tests for devopstoolbox.k8s.utils module."""
 
-from devopstoolbox.k8s.utils import parse_cpu, parse_memory
+from devopstoolbox.k8s.utils import parse_cpu, parse_memory, calculate_cpu_percentage, calculate_memory_percentage
 
 
 class TestParseCpu:
@@ -70,3 +70,38 @@ class TestParseMemory:
         """Test parsing zero values."""
         assert parse_memory("0Ki") == "0 B"
         assert parse_memory("0") == "0 B"
+
+
+class TestCpuPercentage:
+    def test_calculate_zero(self):
+        assert calculate_cpu_percentage(None, None) == "-"
+        assert calculate_cpu_percentage(None, 1000) == "-"
+        assert calculate_cpu_percentage(100, None) == "-"
+    def test_calculate_invalid(self):
+        assert calculate_cpu_percentage('1000', 'x') == "-"
+        assert calculate_cpu_percentage('x', '1000') == "-"
+        assert calculate_cpu_percentage('x', 'x') == "-"
+    def test_parse_nanocores(self):
+        assert calculate_cpu_percentage('10000n', '300000n') == '3.33%'
+        assert calculate_cpu_percentage('300000n', '300000n') == '100.00%'
+    def test_parse_milicores(self):
+        assert calculate_cpu_percentage('10000m', '300000m') == '3.33%'
+        assert calculate_cpu_percentage('300000m', '300000m') == '100.00%'
+    def test_parse_cores(self):
+        assert calculate_cpu_percentage('1', '3') == '33.33%'
+        assert calculate_cpu_percentage('3', '3') == '100.00%'
+    def test_parse_mix_nanocores_milicores(self):
+        assert calculate_cpu_percentage('10000m', '300000000000n') == '3.33%'
+        assert calculate_cpu_percentage('300000000000n', '300000m') == '100.00%'
+
+
+
+class TestMemoryPercentage:
+    def test_calculate_zero(self):
+        assert calculate_memory_percentage(None, None) == "-"
+        assert calculate_memory_percentage(None, 1000) == "-"
+        assert calculate_memory_percentage(100, None) == "-"
+    def test_calculate_invalid(self):
+        assert calculate_cpu_percentage('1000', 'x') == "-"
+        assert calculate_cpu_percentage('x', '1000') == "-"
+        assert calculate_cpu_percentage('x', 'x') == "-"
