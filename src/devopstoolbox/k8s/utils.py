@@ -28,7 +28,7 @@ def parse_cpu(cpu_str: str, return_number: bool = False):
     else:
         cores = float(cpu_str)
         if return_number:
-            return cores*1000
+            return cores * 1000
         else:
             return f"{cores * 1000:.2f}m"
 
@@ -53,12 +53,14 @@ def parse_memory(mem_str: str, return_number: bool = False):
             return f"{bytes_val / 1024:.2f} Ki"
         return f"{bytes_val} B"
 
+
 def calculate_cpu_percentage(usage, limit):
     if usage is None or limit is None or not (usage[:-1].isdigit() or usage.isdigit()) or not (limit[:-1].isdigit() or limit.isdigit()):
         return "-"
     else:
-        result = parse_cpu(usage, return_number=True) / parse_cpu(limit,return_number=True) * 100
+        result = parse_cpu(usage, return_number=True) / parse_cpu(limit, return_number=True) * 100
         return f"{result:.2f}%"
+
 
 def calculate_memory_percentage(usage, limit):
     if usage is None or limit is None or not usage[:-2].isdigit() or not limit[:-2].isdigit():

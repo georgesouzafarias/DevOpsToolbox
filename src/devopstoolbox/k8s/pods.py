@@ -20,11 +20,7 @@ def list(namespace: str = "default", all_namespaces: bool = False):
 
     try:
         v1 = client.CoreV1Api()
-        pods = (
-            v1.list_pod_for_all_namespaces(watch=False)
-            if all_namespaces
-            else v1.list_namespaced_pod(namespace, watch=False)
-        )
+        pods = v1.list_pod_for_all_namespaces(watch=False) if all_namespaces else v1.list_namespaced_pod(namespace, watch=False)
 
         table = Table(title=f"Pods in {scope}")
         table.add_column("Namespace", style="cyan", justify="center")
@@ -53,13 +49,9 @@ def metrics(namespace: str = "default", all_namespaces: bool = False):
     metrics_by_container = {}
     try:
         if all_namespaces:
-            pod_metrics = custom_api.list_cluster_custom_object(
-                group="metrics.k8s.io", version="v1beta1", plural="pods"
-            )
+            pod_metrics = custom_api.list_cluster_custom_object(group="metrics.k8s.io", version="v1beta1", plural="pods")
         else:
-            pod_metrics = custom_api.list_namespaced_custom_object(
-                group="metrics.k8s.io", version="v1beta1", namespace=namespace, plural="pods"
-            )
+            pod_metrics = custom_api.list_namespaced_custom_object(group="metrics.k8s.io", version="v1beta1", namespace=namespace, plural="pods")
 
         for pod in pod_metrics.get("items", []):
             pod_name = pod.get("metadata", {}).get("name", "")
@@ -73,11 +65,7 @@ def metrics(namespace: str = "default", all_namespaces: bool = False):
 
     try:
         v1 = client.CoreV1Api()
-        pods = (
-            v1.list_pod_for_all_namespaces(watch=False)
-            if all_namespaces
-            else v1.list_namespaced_pod(namespace, watch=False)
-        )
+        pods = v1.list_pod_for_all_namespaces(watch=False) if all_namespaces else v1.list_namespaced_pod(namespace, watch=False)
 
         table = Table(title=f"Pod Resources in {scope}")
         table.add_column("Namespace", style="cyan", justify="center")
@@ -102,8 +90,8 @@ def metrics(namespace: str = "default", all_namespaces: bool = False):
 
                 key = (pod_ns, pod_name, container.name)
                 usage = metrics_by_container.get(key, {})
-                cpu_percent_usage = utils.calculate_cpu_percentage(usage.get('cpu'), limits.get('cpu'))
-                memory_percent_usage = utils.calculate_memory_percentage(usage.get('memory'), limits.get('memory'))
+                cpu_percent_usage = utils.calculate_cpu_percentage(usage.get("cpu"), limits.get("cpu"))
+                memory_percent_usage = utils.calculate_memory_percentage(usage.get("memory"), limits.get("memory"))
                 table.add_row(
                     pod_ns,
                     pod_name,
@@ -133,11 +121,7 @@ def unhealthy(namespace: str = "default", all_namespaces: bool = False):
 
     try:
         v1 = client.CoreV1Api()
-        pods = (
-            v1.list_pod_for_all_namespaces(watch=False)
-            if all_namespaces
-            else v1.list_namespaced_pod(namespace, watch=False)
-        )
+        pods = v1.list_pod_for_all_namespaces(watch=False) if all_namespaces else v1.list_namespaced_pod(namespace, watch=False)
 
         table = Table(title=f"Pods in {scope}")
         table.add_column("Namespace", style="cyan", justify="center")

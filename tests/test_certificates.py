@@ -43,9 +43,7 @@ class TestCertificatesListCommand:
         result = runner.invoke(certificates.app, ["list"])
 
         assert result.exit_code == 0
-        mock_custom_api.list_namespaced_custom_object.assert_called_once_with(
-            group="cert-manager.io", version="v1", namespace="default", plural="certificates"
-        )
+        mock_custom_api.list_namespaced_custom_object.assert_called_once_with(group="cert-manager.io", version="v1", namespace="default", plural="certificates")
 
     @patch("devopstoolbox.k8s.certificates.custom_api")
     def test_list_certificates_specific_namespace(self, mock_custom_api, mock_ready_certificate):
@@ -55,9 +53,7 @@ class TestCertificatesListCommand:
         result = runner.invoke(certificates.app, ["list", "--namespace", "cert-manager"])
 
         assert result.exit_code == 0
-        mock_custom_api.list_namespaced_custom_object.assert_called_once_with(
-            group="cert-manager.io", version="v1", namespace="cert-manager", plural="certificates"
-        )
+        mock_custom_api.list_namespaced_custom_object.assert_called_once_with(group="cert-manager.io", version="v1", namespace="cert-manager", plural="certificates")
 
     @patch("devopstoolbox.k8s.certificates.custom_api")
     def test_list_certificates_empty_response(self, mock_custom_api):
@@ -93,13 +89,9 @@ class TestCertificatesNotReadyCommand:
     """Tests for certificates not-ready command."""
 
     @patch("devopstoolbox.k8s.certificates.custom_api")
-    def test_not_ready_filters_ready_certificates(
-        self, mock_custom_api, mock_ready_certificate, mock_not_ready_certificate
-    ):
+    def test_not_ready_filters_ready_certificates(self, mock_custom_api, mock_ready_certificate, mock_not_ready_certificate):
         """Test that ready certificates are filtered out."""
-        mock_custom_api.list_namespaced_custom_object.return_value = {
-            "items": [mock_ready_certificate, mock_not_ready_certificate]
-        }
+        mock_custom_api.list_namespaced_custom_object.return_value = {"items": [mock_ready_certificate, mock_not_ready_certificate]}
 
         result = runner.invoke(certificates.app, ["not-ready"])
 

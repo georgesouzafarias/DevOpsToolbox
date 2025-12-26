@@ -14,9 +14,7 @@ custom_api = CustomObjectsApi()
 def list(namespace: str = "default"):
     """ """
     try:
-        certificates = custom_api.list_namespaced_custom_object(
-            group="cert-manager.io", version="v1", namespace=namespace, plural="certificates"
-        )
+        certificates = custom_api.list_namespaced_custom_object(group="cert-manager.io", version="v1", namespace=namespace, plural="certificates")
 
         table = Table(title=f"List Certificates in {namespace}")
         table.add_column("Namespace", style="cyan", justify="center")
@@ -41,9 +39,7 @@ def list(namespace: str = "default"):
 def not_ready(namespace: str = "default"):
     """ """
     try:
-        certificates = custom_api.list_namespaced_custom_object(
-            group="cert-manager.io", version="v1", namespace=namespace, plural="certificates"
-        )
+        certificates = custom_api.list_namespaced_custom_object(group="cert-manager.io", version="v1", namespace=namespace, plural="certificates")
 
         table = Table(title=f"List Certificates in {namespace}")
         table.add_column("Namespace", style="cyan", justify="center")
