@@ -1,7 +1,7 @@
 import typer
 from rich import print
-from devopstoolbox import generate
 
+from devopstoolbox import generate
 from devopstoolbox.k8s import certificates, pods, services
 
 __version__ = "DevOpsToolbox v0.1.0"
