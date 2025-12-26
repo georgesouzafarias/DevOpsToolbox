@@ -3,10 +3,9 @@
 from unittest.mock import Mock, patch
 
 import pytest
+from typer.testing import CliRunner
 
 with patch("devopstoolbox.k8s.utils.get_kube_config"):
-    from typer.testing import CliRunner
-
     from devopstoolbox.k8s import pods
 
 
@@ -41,6 +40,14 @@ def mock_unhealthy_pod():
     pod.status.container_statuses = [container_status]
 
     return pod
+
+@pytest.fixture
+def mock_container():
+    container = Mock()
+    container.name = "main"
+    container.resources.requests = {"cpu": "100m", "memory": "128Mi"}
+    container.resources.limits = {"cpu": "200m", "memory": "256Mi"}
+    return container
 
 
 class TestPodsListCommand:
@@ -202,3 +209,47 @@ class TestPodsMetricsCommand:
 
         assert result.exit_code == 0
         assert "Error" in result.output or "Metrics Server" in result.output
+
+    @patch("devopstoolbox.k8s.pods.client.CoreV1Api")
+    @patch("devopstoolbox.k8s.pods.custom_api")
+    def test_metrics_specific_namespace(self, mock_custom_api, mock_core_api, mock_container):
+        mock_custom_api.list_namespaced_custom_object.return_value = {
+            "items": [
+                {
+                    "metadata": {"name": "test-pod", "namespace": "default"},
+                    "containers": [{"name": "main", "usage": {"cpu": "100m", "memory": "128Mi"}}],
+                }
+            ]
+        }
+
+        mock_v1 = Mock()
+        mock_core_api.return_value = mock_v1
+
+        pod = Mock()
+        pod.metadata.namespace = "default"
+        pod.metadata.name = "test-pod"
+        pod.spec.containers = [mock_container]
+
+        mock_pods = Mock()
+        mock_pods.items = [pod]
+        mock_v1.list_namespaced_pod.return_value = mock_pods
+
+        result = runner.invoke(pods.app, ["metrics", "--namespace", "kube-system"])
+
+        assert result.exit_code == 0
+        mock_custom_api.list_namespaced_custom_object.assert_called_once()
+
+    @patch("devopstoolbox.k8s.pods.client.CoreV1Api")
+    @patch("devopstoolbox.k8s.pods.custom_api")
+    def test_metrics_all_namespaces(self, mock_custom_api, mock_core_api):
+        mock_custom_api.list_cluster_custom_object.return_value = {"items": []}
+
+        mock_v1 = Mock()
+        mock_core_api.return_value = mock_v1
+        mock_v1.list_pod_for_all_namespaces.return_value = Mock(items=[])
+
+        result = runner.invoke(pods.app, ["metrics", "--all-namespaces"])
+
+        assert result.exit_code == 0
+        mock_custom_api.list_cluster_custom_object.assert_called_once()
+        mock_v1.list_pod_for_all_namespaces.assert_called_once()
