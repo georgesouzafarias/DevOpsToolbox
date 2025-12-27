@@ -1,0 +1,49 @@
+{
+  "systemStatus": {
+    "lastSync": "2025-12-27T18:32:00Z",
+    "hubVersion": "v4.2.1-beta",
+    "online": true
+  },
+  "rooms": [
+    {
+      "id": "living-room-01",
+      "name": "Living Room",
+      "temperature": 21.5,
+      "devices": [
+        {
+          "type": "Smart Light",
+          "manufacturer": "Lumina",
+          "brightness": 75,
+          "color": "#FFD700",
+          "powerUsageWatts": 9.5
+        },
+        {
+          "type": "Thermostat",
+          "manufacturer": "EcoTemp",
+          "mode": "heating",
+          "targetTemp": 22.0
+        }
+      ]
+    },
+    {
+      "id": "kitchen-01",
+      "name": "Kitchen",
+      "temperature": 19.8,
+      "devices": [
+        {
+          "type": "Smart Fridge",
+          "manufacturer": "CoolTech",
+          "alerts": ["Filter Replacement Due"],
+          "inventory": [
+            { "item": "Milk", "quantity": 1, "unit": "liter" },
+            { "item": "Eggs", "quantity": 12, "unit": "count" }
+          ]
+        }
+      ]
+    }
+  ],
+  "securityLog": [
+    { "time": "2025-12-27T10:15:00Z", "event": "Front Door Unlocked", "user": "Owner" },
+    { "time": "2025-12-27T14:30:00Z", "event": "Motion Detected", "location": "Backyard" }
+  ]
+}
