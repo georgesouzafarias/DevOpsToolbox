@@ -67,7 +67,7 @@ class TestCertificatesListCommand:
 
     @patch("devopstoolbox.k8s.certificates.custom_api")
     def test_list_certificates_all_namespace_long(self, mock_custom_api, mock_ready_certificate):
-        """Test listing certificates for all namespace with long form"""
+        """Test listing certificates for all namespaces with long form"""
         mock_custom_api.list_cluster_custom_object.return_value = {"items": [mock_ready_certificate]}
 
         result = runner.invoke(certificates.app, ["list", "--all-namespaces"])
