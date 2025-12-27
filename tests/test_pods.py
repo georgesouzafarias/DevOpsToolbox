@@ -5,8 +5,7 @@ from unittest.mock import Mock, patch
 import pytest
 from typer.testing import CliRunner
 
-with patch("devopstoolbox.k8s.utils.config.load_kube_config"), \
-     patch("devopstoolbox.k8s.utils.config.list_kube_config_contexts", return_value=([], None)):
+with patch("devopstoolbox.k8s.utils.config.load_kube_config"), patch("devopstoolbox.k8s.utils.config.list_kube_config_contexts", return_value=([], None)):
     from devopstoolbox.k8s import pods
 
 
