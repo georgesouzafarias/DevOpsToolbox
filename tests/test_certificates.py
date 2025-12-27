@@ -46,7 +46,7 @@ class TestCertificatesListCommand:
         mock_custom_api.list_namespaced_custom_object.assert_called_once_with(group="cert-manager.io", version="v1", namespace="default", plural="certificates")
 
     @patch("devopstoolbox.k8s.certificates.custom_api")
-    def test_list_certificates_specific_namespace(self, mock_custom_api, mock_ready_certificate):
+    def test_list_certificates_specific_namespace_long(self, mock_custom_api, mock_ready_certificate):
         """Test listing certificates in a specific namespace."""
         mock_custom_api.list_namespaced_custom_object.return_value = {"items": [mock_ready_certificate]}
 
@@ -54,6 +54,36 @@ class TestCertificatesListCommand:
 
         assert result.exit_code == 0
         mock_custom_api.list_namespaced_custom_object.assert_called_once_with(group="cert-manager.io", version="v1", namespace="cert-manager", plural="certificates")
+
+    @patch("devopstoolbox.k8s.certificates.custom_api")
+    def test_list_certificates_specific_namespace_short(self, mock_custom_api, mock_ready_certificate):
+        """Test listing certificates in a specific namespace."""
+        mock_custom_api.list_namespaced_custom_object.return_value = {"items": [mock_ready_certificate]}
+
+        result = runner.invoke(certificates.app, ["list", "-n", "cert-manager"])
+
+        assert result.exit_code == 0
+        mock_custom_api.list_namespaced_custom_object.assert_called_once_with(group="cert-manager.io", version="v1", namespace="cert-manager", plural="certificates")
+
+    @patch("devopstoolbox.k8s.certificates.custom_api")
+    def test_list_certificates_all_namespace_long(self, mock_custom_api, mock_ready_certificate):
+        """Test listing certificates in a specific namespace."""
+        mock_custom_api.list_cluster_custom_object.return_value = {"items": [mock_ready_certificate]}
+
+        result = runner.invoke(certificates.app, ["list", "--all-namespaces"])
+
+        assert result.exit_code == 0
+        mock_custom_api.list_cluster_custom_object.assert_called_once_with(group="cert-manager.io", version="v1", plural="certificates")
+
+    @patch("devopstoolbox.k8s.certificates.custom_api")
+    def test_list_certificates_all_namespace_short(self, mock_custom_api, mock_ready_certificate):
+        """Test listing certificates in a specific namespace."""
+        mock_custom_api.list_cluster_custom_object.return_value = {"items": [mock_ready_certificate]}
+
+        result = runner.invoke(certificates.app, ["list", "-A"])
+
+        assert result.exit_code == 0
+        mock_custom_api.list_cluster_custom_object.assert_called_once_with(group="cert-manager.io", version="v1", plural="certificates")
 
     @patch("devopstoolbox.k8s.certificates.custom_api")
     def test_list_certificates_empty_response(self, mock_custom_api):

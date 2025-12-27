@@ -82,7 +82,7 @@ class TestPodsListCommand:
         mock_v1.list_namespaced_pod.assert_called_once_with("default", watch=False)
 
     @patch("devopstoolbox.k8s.pods.client.CoreV1Api")
-    def test_list_pods_specific_namespace(self, mock_api, mock_pod):
+    def test_list_pods_specific_namespace_long(self, mock_api, mock_pod):
         """Test listing pods in a specific namespace."""
         mock_v1 = Mock()
         mock_api.return_value = mock_v1
@@ -97,7 +97,22 @@ class TestPodsListCommand:
         mock_v1.list_namespaced_pod.assert_called_once_with("kube-system", watch=False)
 
     @patch("devopstoolbox.k8s.pods.client.CoreV1Api")
-    def test_list_pods_all_namespaces(self, mock_api, mock_pod):
+    def test_list_pods_specific_namespace_short(self, mock_api, mock_pod):
+        """Test listing pods in a specific namespace."""
+        mock_v1 = Mock()
+        mock_api.return_value = mock_v1
+
+        mock_pods = Mock()
+        mock_pods.items = [mock_pod]
+        mock_v1.list_namespaced_pod.return_value = mock_pods
+
+        result = runner.invoke(pods.app, ["list", "-n", "kube-system"])
+
+        assert result.exit_code == 0
+        mock_v1.list_namespaced_pod.assert_called_once_with("kube-system", watch=False)
+
+    @patch("devopstoolbox.k8s.pods.client.CoreV1Api")
+    def test_list_pods_all_namespaces_long(self, mock_api, mock_pod):
         """Test listing pods across all namespaces."""
         mock_v1 = Mock()
         mock_api.return_value = mock_v1
@@ -107,6 +122,21 @@ class TestPodsListCommand:
         mock_v1.list_pod_for_all_namespaces.return_value = mock_pods
 
         result = runner.invoke(pods.app, ["list", "--all-namespaces"])
+
+        assert result.exit_code == 0
+        mock_v1.list_pod_for_all_namespaces.assert_called_once_with(watch=False)
+
+    @patch("devopstoolbox.k8s.pods.client.CoreV1Api")
+    def test_list_pods_all_namespaces_short(self, mock_api, mock_pod):
+        """Test listing pods across all namespaces."""
+        mock_v1 = Mock()
+        mock_api.return_value = mock_v1
+
+        mock_pods = Mock()
+        mock_pods.items = [mock_pod]
+        mock_v1.list_pod_for_all_namespaces.return_value = mock_pods
+
+        result = runner.invoke(pods.app, ["list", "-A"])
 
         assert result.exit_code == 0
         mock_v1.list_pod_for_all_namespaces.assert_called_once_with(watch=False)

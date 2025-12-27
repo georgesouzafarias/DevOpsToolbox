@@ -11,7 +11,7 @@ config.load_kube_config()
 
 
 @app.command()
-def list(namespace: Annotated[str, typer.Option("-n")] = "default", all_namespaces: Annotated[bool, typer.Option("-A")] = False):
+def list(namespace: Annotated[str, typer.Option("--namespace", "-n")] = "default", all_namespaces: Annotated[bool, typer.Option("--all-namespaces", "-A")] = False):
     """List services"""
     scope = "all namespaces" if all_namespaces else f"namespace {namespace}"
     console.print(f"[bold blue]Listing pods in {scope}...[/bold blue]")
