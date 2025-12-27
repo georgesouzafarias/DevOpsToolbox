@@ -14,7 +14,7 @@ custom_api = CustomObjectsApi()
 
 @app.command()
 def list(namespace: Annotated[str, typer.Option("--namespace", "-n")] = "default", all_namespaces: Annotated[bool, typer.Option("--all-namespaces", "-A")] = False):
-    """ """
+    """List cert-manager certificates with renewal time and status."""
     scope = "all namespaces" if all_namespaces else f"namespace {namespace}"
     console.print(f"[bold blue]Listing certificates resources in {scope}...[/bold blue]")
 
@@ -45,7 +45,7 @@ def list(namespace: Annotated[str, typer.Option("--namespace", "-n")] = "default
 
 @app.command()
 def not_ready(namespace: Annotated[str, typer.Option("--namespace", "-n")] = "default", all_namespaces: Annotated[bool, typer.Option("--all-namespaces", "-A")] = False):
-    """ """
+    """List certificates that are not in Ready state."""
     scope = "all namespaces" if all_namespaces else f"namespace {namespace}"
     console.print(f"[bold blue]Listing certificates resources in {scope}...[/bold blue]")
 
