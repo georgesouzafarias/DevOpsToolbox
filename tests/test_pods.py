@@ -76,7 +76,7 @@ class TestPodsListCommand:
         mock_pods.items = [mock_pod]
         mock_v1.list_namespaced_pod.return_value = mock_pods
 
-        result = runner.invoke(pods.app, ["list"])
+        result = runner.invoke(pods.app, ["list", "-n", "default"])
 
         assert result.exit_code == 0
         mock_v1.list_namespaced_pod.assert_called_once_with("default", watch=False)
@@ -297,7 +297,7 @@ class TestPodsMetricsCommand:
         mock_pods.items = [pod]
         mock_v1.list_namespaced_pod.return_value = mock_pods
 
-        result = runner.invoke(pods.app, ["metrics"])
+        result = runner.invoke(pods.app, ["metrics", "-n", "default"])
 
         assert result.exit_code == 0
         assert "Pod Resources" in result.output
