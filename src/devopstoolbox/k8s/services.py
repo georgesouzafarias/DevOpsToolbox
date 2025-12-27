@@ -1,3 +1,5 @@
+from typing import Annotated
+
 import typer
 from kubernetes import client, config
 from rich.console import Console
@@ -9,7 +11,7 @@ config.load_kube_config()
 
 
 @app.command()
-def list(namespace: str = "default", all_namespaces: bool = False):
+def list(namespace: Annotated[str, typer.Option("-n")] = "default", all_namespaces: Annotated[bool, typer.Option("-A")] = False):
     """List services"""
     scope = "all namespaces" if all_namespaces else f"namespace {namespace}"
     console.print(f"[bold blue]Listing pods in {scope}...[/bold blue]")

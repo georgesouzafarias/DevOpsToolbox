@@ -1,3 +1,5 @@
+from typing import Annotated
+
 import typer
 from kubernetes import config
 from kubernetes.client import CustomObjectsApi
@@ -11,12 +13,18 @@ custom_api = CustomObjectsApi()
 
 
 @app.command()
-def list(namespace: str = "default"):
+def list(namespace: Annotated[str, typer.Option("-n")] = "default", all_namespaces: Annotated[bool, typer.Option("-A")] = False):
     """ """
-    try:
-        certificates = custom_api.list_namespaced_custom_object(group="cert-manager.io", version="v1", namespace=namespace, plural="certificates")
+    scope = "all namespaces" if all_namespaces else f"namespace {namespace}"
+    console.print(f"[bold blue]Listing certificates resources in {scope}...[/bold blue]")
 
-        table = Table(title=f"List Certificates in {namespace}")
+    try:
+        if all_namespaces:
+            certificates = custom_api.list_cluster_custom_object(group="cert-manager.io", version="v1", plural="certificates")
+        else:
+            certificates = custom_api.list_namespaced_custom_object(group="cert-manager.io", version="v1", namespace=namespace, plural="certificates")
+
+        table = Table(title=f"List Certificates in {scope}")
         table.add_column("Namespace", style="cyan", justify="center")
         table.add_column("Name", style="cyan", justify="center")
         table.add_column("Renewal Time", style="green", justify="center")
@@ -36,12 +44,18 @@ def list(namespace: str = "default"):
 
 
 @app.command()
-def not_ready(namespace: str = "default"):
+def not_ready(namespace: Annotated[str, typer.Option("-n")] = "default", all_namespaces: Annotated[bool, typer.Option("-A")] = False):
     """ """
-    try:
-        certificates = custom_api.list_namespaced_custom_object(group="cert-manager.io", version="v1", namespace=namespace, plural="certificates")
+    scope = "all namespaces" if all_namespaces else f"namespace {namespace}"
+    console.print(f"[bold blue]Listing certificates resources in {scope}...[/bold blue]")
 
-        table = Table(title=f"List Certificates in {namespace}")
+    try:
+        if all_namespaces:
+            certificates = custom_api.list_cluster_custom_object(group="cert-manager.io", version="v1", plural="certificates")
+        else:
+            certificates = custom_api.list_namespaced_custom_object(group="cert-manager.io", version="v1", namespace=namespace, plural="certificates")
+
+        table = Table(title=f"List Certificates in {scope}")
         table.add_column("Namespace", style="cyan", justify="center")
         table.add_column("Name", style="cyan", justify="center")
         table.add_column("Renewal Time", style="green", justify="center")
