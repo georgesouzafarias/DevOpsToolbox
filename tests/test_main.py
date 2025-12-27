@@ -4,7 +4,8 @@ from unittest.mock import patch
 
 from typer.testing import CliRunner
 
-with patch("devopstoolbox.k8s.utils"):
+with patch("devopstoolbox.k8s.utils.config.load_kube_config"), patch("devopstoolbox.k8s.utils.config.list_kube_config_contexts") as mock_contexts:
+    mock_contexts.return_value = ([], {"context": {"namespace": "default"}})
     from devopstoolbox.main import app
 
 
