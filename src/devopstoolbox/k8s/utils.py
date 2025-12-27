@@ -13,7 +13,7 @@ def get_current_namespace():
     try:
         _, active_context = config.list_kube_config_contexts()
         return active_context["context"].get("namespace", "default")
-    except Exception:
+    except (config.ConfigException, KeyError, TypeError, ValueError):
         return "default"
 
 
