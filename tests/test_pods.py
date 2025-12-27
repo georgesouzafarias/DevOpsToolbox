@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 import pytest
 from typer.testing import CliRunner
 
-with patch("devopstoolbox.k8s.utils.get_kube_config"):
+with patch("devopstoolbox.k8s.utils.config.load_kube_config"), patch("devopstoolbox.k8s.utils.config.list_kube_config_contexts", return_value=([], None)):
     from devopstoolbox.k8s import pods
 
 
@@ -76,7 +76,7 @@ class TestPodsListCommand:
         mock_pods.items = [mock_pod]
         mock_v1.list_namespaced_pod.return_value = mock_pods
 
-        result = runner.invoke(pods.app, ["list"])
+        result = runner.invoke(pods.app, ["list", "-n", "default"])
 
         assert result.exit_code == 0
         mock_v1.list_namespaced_pod.assert_called_once_with("default", watch=False)
@@ -297,7 +297,7 @@ class TestPodsMetricsCommand:
         mock_pods.items = [pod]
         mock_v1.list_namespaced_pod.return_value = mock_pods
 
-        result = runner.invoke(pods.app, ["metrics"])
+        result = runner.invoke(pods.app, ["metrics", "-n", "default"])
 
         assert result.exit_code == 0
         assert "Pod Resources" in result.output

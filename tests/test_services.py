@@ -38,8 +38,7 @@ class TestServicesListCommand:
         mock_services.items = [mock_service]
         mock_v1.list_namespaced_service.return_value = mock_services
 
-        # Single-command app, no subcommand needed
-        result = runner.invoke(services.app, [])
+        result = runner.invoke(services.app, ["-n", "default"])
 
         assert result.exit_code == 0
         mock_v1.list_namespaced_service.assert_called_once_with("default", watch=False)

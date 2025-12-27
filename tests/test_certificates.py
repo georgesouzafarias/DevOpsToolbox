@@ -40,7 +40,7 @@ class TestCertificatesListCommand:
         """Test listing certificates in default namespace."""
         mock_custom_api.list_namespaced_custom_object.return_value = {"items": [mock_ready_certificate]}
 
-        result = runner.invoke(certificates.app, ["list"])
+        result = runner.invoke(certificates.app, ["list", "-n", "default"])
 
         assert result.exit_code == 0
         mock_custom_api.list_namespaced_custom_object.assert_called_once_with(group="cert-manager.io", version="v1", namespace="default", plural="certificates")
