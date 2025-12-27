@@ -44,6 +44,15 @@ devopstoolbox version
 devopstoolbox --help
 ```
 
+### Short Aliases
+
+All Kubernetes commands support short aliases for common options, matching kubectl conventions:
+
+| Long Form          | Short | Description                    |
+| ------------------ | ----- | ------------------------------ |
+| `--namespace`      | `-n`  | Specify the namespace          |
+| `--all-namespaces` | `-A`  | List resources across all namespaces |
+
 ### Pods Management
 
 ```bash
@@ -51,16 +60,16 @@ devopstoolbox --help
 devopstoolbox k8s pods list
 
 # List all pods in a specific namespace
-devopstoolbox k8s pods list --namespace monitoring
+devopstoolbox k8s pods list -n monitoring
 
 # List all pods across all namespaces
-devopstoolbox k8s pods list --all-namespaces
+devopstoolbox k8s pods list -A
 
 # List unhealthy pods (not Running or Succeeded)
-devopstoolbox k8s pods unhealthy --all-namespaces
+devopstoolbox k8s pods unhealthy -A
 
 # Show pod metrics (CPU and memory usage)
-devopstoolbox k8s pods metrics --namespace default
+devopstoolbox k8s pods metrics -n default
 ```
 
 ### Services Management
@@ -70,10 +79,10 @@ devopstoolbox k8s pods metrics --namespace default
 devopstoolbox k8s services list
 
 # List services in a specific namespace
-devopstoolbox k8s services list --namespace kube-system
+devopstoolbox k8s services list -n kube-system
 
 # List all services across all namespaces
-devopstoolbox k8s services list --all-namespaces
+devopstoolbox k8s services list -A
 ```
 
 ### Certificates Management
@@ -83,10 +92,10 @@ devopstoolbox k8s services list --all-namespaces
 devopstoolbox k8s certificates list
 
 # List certificates in a specific namespace
-devopstoolbox k8s certificates list --namespace cert-manager
+devopstoolbox k8s certificates list -n cert-manager
 
 # List certificates that are not ready
-devopstoolbox k8s certificates not-ready --namespace default
+devopstoolbox k8s certificates not-ready -n default
 ```
 
 ## Command Reference
@@ -180,56 +189,6 @@ To bypass the hook (not recommended):
 ```bash
 git push --no-verify
 ```
-
-## Project Structure
-
-```
-DevOpsToolbox/
-├── .github/
-│   ├── workflows/
-│   │   └── ci.yml            # CI pipeline (lint + test)
-│   ├── ISSUE_TEMPLATE/
-│   │   ├── bug.md            # Bug report template
-│   │   └── feature.md        # Feature request template
-│   └── pull_request_template.md
-├── src/
-│   └── devopstoolbox/
-│       ├── main.py           # CLI entry point
-│       └── k8s/
-│           ├── pods.py       # Pod management commands
-│           ├── services.py   # Service management commands
-│           ├── certificates.py # Certificate management commands
-│           └── utils.py      # Helper functions
-├── tests/                    # Test suite
-│   ├── test_pods.py
-│   ├── test_services.py
-│   ├── test_certificates.py
-│   ├── test_utils.py
-│   └── test_main.py
-├── scripts/
-│   └── install-hooks.sh      # Git hooks installer
-├── CONTRIBUTING.md           # Contribution guidelines
-├── pyproject.toml            # Project configuration
-└── README.md
-```
-
-## Roadmap
-
-| Feature | Description | Status |
-| ------- | ----------- | ------ |
-| `k8s deployments` | List, restart, and scale deployments | Planned |
-| `k8s nodes` | List nodes with status, capacity, and conditions | Planned |
-| `k8s events` | Show cluster events for debugging | Planned |
-| `k8s logs` | Tail pod logs with filtering | Planned |
-| `k8s pods overprovisioned` | List pods with unused CPU/memory requests | Planned |
-| `k8s pods top` | Show pods sorted by resource consumption | Planned |
-| `k8s resources quota` | Show namespace resource quotas and usage | Planned |
-| `k8s ingress list` | List ingresses with hosts and backends | Planned |
-| `k8s secrets expiring` | List secrets (TLS) expiring soon | Planned |
-| `k8s configmaps unused` | Find configmaps not mounted by any pod | Planned |
-| `k8s pvc list` | List PVCs with capacity and status | Planned |
-| `k8s jobs failed` | List failed jobs with error reasons | Planned |
-| `k8s cronjobs list` | List cronjobs with schedule and last run | Planned |
 
 ## License
 
