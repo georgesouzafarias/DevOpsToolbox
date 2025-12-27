@@ -146,6 +146,15 @@ class TestCertificatesNotReadyCommand:
         assert result.exit_code == 0
 
     @patch("devopstoolbox.k8s.certificates.custom_api")
+    def test_not_ready_all_certificates_read_all_namespaces(self, mock_custom_api, mock_ready_certificate):
+        """Test when all certificates are ready."""
+        mock_custom_api.list_namespaced_custom_object.return_value = {"items": [mock_ready_certificate]}
+
+        result = runner.invoke(certificates.app, ["not-ready", "--all-namespaces"])
+
+        assert result.exit_code == 0
+
+    @patch("devopstoolbox.k8s.certificates.custom_api")
     def test_not_ready_missing_conditions(self, mock_custom_api):
         """Test handling certificates with missing conditions."""
         cert_no_conditions = {"metadata": {"name": "broken-cert"}, "status": {"conditions": []}}
