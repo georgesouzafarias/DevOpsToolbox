@@ -2,13 +2,19 @@ import re
 
 from kubernetes import config
 
+try:
+    config.load_kube_config()
+except config.ConfigException:
+    config.load_incluster_config()
 
-def get_kube_config():
-    """Get Kube Config"""
+
+def get_current_namespace():
+    """Get the current namespace from the active Kubernetes context."""
     try:
-        return config.load_kube_config()
-    except config.ConfigException:
-        return config.load_incluster_config()
+        _, active_context = config.list_kube_config_contexts()
+        return active_context["context"].get("namespace", "default")
+    except Exception:
+        return "default"
 
 
 def parse_cpu(cpu_str: str, return_number: bool = False):
