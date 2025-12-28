@@ -10,6 +10,7 @@ A Python-based CLI toolkit for automating daily DevOps operations.
 ## Features
 
 - **Kubernetes Management**: Manage pods, services, and certificates from the command line
+- **YAML Validation**: Validate YAML files for syntax errors with detailed error reporting
 - **Human-readable Output**: Formatted tables with Rich for clear visualization
 - **Metrics Support**: View CPU and memory usage for pods (requires Metrics Server)
 - **Certificate Management**: List and monitor cert-manager certificates
@@ -98,6 +99,16 @@ devopstoolbox k8s certificates list -n cert-manager
 devopstoolbox k8s certificates not-ready -n default
 ```
 
+### YAML Validation
+
+```bash
+# Validate a single YAML file
+devopstoolbox validate yaml -f deployment.yaml
+
+# Validate all YAML files in a directory (recursive)
+devopstoolbox validate yaml -d ./manifests
+```
+
 ## Command Reference
 
 | Command                                    | Description                                |
@@ -109,11 +120,13 @@ devopstoolbox k8s certificates not-ready -n default
 | `devopstoolbox k8s services list`          | List services with type and traffic policy |
 | `devopstoolbox k8s certificates list`      | List cert-manager certificates             |
 | `devopstoolbox k8s certificates not-ready` | List certificates not in Ready state       |
+| `devopstoolbox validate yaml`              | Validate YAML files for syntax errors      |
 
 ## Dependencies
 
 - boto3
 - kubernetes
+- pyyaml
 - typer
 - rich
 
