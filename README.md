@@ -14,6 +14,7 @@ A Python-based CLI toolkit for automating daily DevOps operations.
 - **Human-readable Output**: Formatted tables with Rich for clear visualization
 - **Metrics Support**: View CPU and memory usage for pods (requires Metrics Server)
 - **Certificate Management**: List and monitor cert-manager certificates
+- **JSON Validation**: Validate JSON file for syntax error with detailed error reporting
 
 ## Requirements
 
@@ -109,6 +110,25 @@ devopstoolbox validate yaml -f deployment.yaml
 devopstoolbox validate yaml -d ./manifests
 ```
 
+### JSON Validation
+
+```bash
+# Validate a single JSON file
+devopstoolbox validate json path/to/file.json
+
+# Scan a directory for JSON files (non-recursive)
+devopstoolbox validate json ./configs
+
+# Scan recursively for JSON files
+devopstoolbox validate json ./configs --recursive
+```
+
+Notes:
+
+- The validate json command reads each file and reports whether it's valid JSON with a short, human-friendly message.
+- On invalid JSON files the command prints the error location (line and column) and exits with a non-zero status.
+- Tests use temporary files and do not modify repository files.
+
 ## Command Reference
 
 | Command                                    | Description                                |
@@ -121,7 +141,7 @@ devopstoolbox validate yaml -d ./manifests
 | `devopstoolbox k8s certificates list`      | List cert-manager certificates             |
 | `devopstoolbox k8s certificates not-ready` | List certificates not in Ready state       |
 | `devopstoolbox validate yaml`              | Validate YAML files for syntax errors      |
-
+| `devopstoolbox validate json`              | Validate JSON files and directory for syntax errors      |
 ## Dependencies
 
 - boto3
