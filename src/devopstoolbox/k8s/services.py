@@ -5,7 +5,10 @@ from rich.table import Table
 
 app = typer.Typer(no_args_is_help=True)
 console = Console()
-config.load_kube_config()
+
+
+def load_config():
+    config.load_kube_config()
 
 
 @app.command()
@@ -15,6 +18,7 @@ def list(namespace: str = "default", all_namespaces: bool = False):
     console.print(f"[bold blue]Listing pods in {scope}...[/bold blue]")
 
     try:
+        load_config()
         v1 = client.CoreV1Api()
         services = v1.list_service_for_all_namespaces(watch=False) if all_namespaces else v1.list_namespaced_service(namespace, watch=False)
 

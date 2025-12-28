@@ -13,6 +13,8 @@ A Python-based CLI toolkit for automating daily DevOps operations.
 - **Human-readable Output**: Formatted tables with Rich for clear visualization
 - **Metrics Support**: View CPU and memory usage for pods (requires Metrics Server)
 - **Certificate Management**: List and monitor cert-manager certificates
+- **JSON Validation**: Validate JSON files for syntax errors with line/column reporting. Supports single files, directories, and recursive scanning.
+
 
 ## Requirements
 
@@ -89,6 +91,19 @@ devopstoolbox k8s certificates list --namespace cert-manager
 devopstoolbox k8s certificates not-ready --namespace default
 ```
 
+### JSON Validation
+
+```bash
+# Validate a single JSON file
+devopstoolbox validate json config.json
+
+# Validate all JSON files in a directory
+devopstoolbox validate json ./configs
+
+# Validate recursively in all subdirectories
+devopstoolbox validate json ./configs --recursive
+```
+
 ## Command Reference
 
 | Command                                    | Description                                |
@@ -100,6 +115,7 @@ devopstoolbox k8s certificates not-ready --namespace default
 | `devopstoolbox k8s services list`          | List services with type and traffic policy |
 | `devopstoolbox k8s certificates list`      | List cert-manager certificates             |
 | `devopstoolbox k8s certificates not-ready` | List certificates not in Ready state       |
+| `devopstoolbox validate json`             | Validate JSON files syntax; supports single file, directory scanning, and reports line/column errors |
 
 ## Dependencies
 

@@ -1,8 +1,7 @@
 import typer
 from rich import print
 
-from devopstoolbox import json_validator
-from devopstoolbox import generate
+from devopstoolbox import generate, json_validator
 from devopstoolbox.k8s import certificates, pods, services
 
 __version__ = "DevOpsToolbox v0.1.0"
@@ -13,7 +12,7 @@ Validator_app = typer.Typer(no_args_is_help=True)
 
 app.add_typer(k8s_app, name="k8s")
 app.add_typer(generate.app, name="generate", help="Generate utilities")
-app.add_typer(json_validator.app , name="validate" , help="Validate JSON file")
+app.add_typer(json_validator.app, name="validate", help="Validate JSON file")
 k8s_app.add_typer(pods.app, name="pods", help="Manager Pods")
 k8s_app.add_typer(services.app, name="services", help="Manager Services")
 k8s_app.add_typer(certificates.app, name="certificates", help="Manager Certificates")

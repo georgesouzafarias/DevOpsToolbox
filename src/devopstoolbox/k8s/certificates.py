@@ -6,14 +6,18 @@ from rich.table import Table
 
 app = typer.Typer(no_args_is_help=True)
 console = Console()
-config.load_kube_config()
-custom_api = CustomObjectsApi()
+
+
+def load_config():
+    config.load_kube_config()
 
 
 @app.command()
 def list(namespace: str = "default"):
     """ """
     try:
+        load_config()
+        custom_api = CustomObjectsApi()
         certificates = custom_api.list_namespaced_custom_object(group="cert-manager.io", version="v1", namespace=namespace, plural="certificates")
 
         table = Table(title=f"List Certificates in {namespace}")
@@ -39,6 +43,8 @@ def list(namespace: str = "default"):
 def not_ready(namespace: str = "default"):
     """ """
     try:
+        load_config()
+        custom_api = CustomObjectsApi()
         certificates = custom_api.list_namespaced_custom_object(group="cert-manager.io", version="v1", namespace=namespace, plural="certificates")
 
         table = Table(title=f"List Certificates in {namespace}")

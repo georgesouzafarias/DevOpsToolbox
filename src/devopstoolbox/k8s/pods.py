@@ -8,8 +8,10 @@ from devopstoolbox.k8s import utils
 
 app = typer.Typer(no_args_is_help=True)
 console = Console()
-config = utils.get_kube_config()
-custom_api = CustomObjectsApi()
+
+
+def load_kube():
+    utils.get_kube_config()
 
 
 @app.command()
@@ -19,6 +21,8 @@ def list(namespace: str = "default", all_namespaces: bool = False):
     console.print(f"[bold blue]Listing pods in {scope}...[/bold blue]")
 
     try:
+        load_kube()
+        CustomObjectsApi()
         v1 = client.CoreV1Api()
         pods = v1.list_pod_for_all_namespaces(watch=False) if all_namespaces else v1.list_namespaced_pod(namespace, watch=False)
 
@@ -48,6 +52,8 @@ def metrics(namespace: str = "default", all_namespaces: bool = False):
 
     metrics_by_container = {}
     try:
+        load_kube()
+        custom_api = CustomObjectsApi()
         if all_namespaces:
             pod_metrics = custom_api.list_cluster_custom_object(group="metrics.k8s.io", version="v1beta1", plural="pods")
         else:
@@ -64,6 +70,8 @@ def metrics(namespace: str = "default", all_namespaces: bool = False):
         console.print(f"[dim]Details: {e}[/dim]")
 
     try:
+        load_kube()
+        custom_api = CustomObjectsApi()
         v1 = client.CoreV1Api()
         pods = v1.list_pod_for_all_namespaces(watch=False) if all_namespaces else v1.list_namespaced_pod(namespace, watch=False)
 
@@ -120,6 +128,8 @@ def unhealthy(namespace: str = "default", all_namespaces: bool = False):
     console.print(f"[bold blue]Listing Issued pods in {scope}...[/bold blue]")
 
     try:
+        load_kube()
+        CustomObjectsApi()
         v1 = client.CoreV1Api()
         pods = v1.list_pod_for_all_namespaces(watch=False) if all_namespaces else v1.list_namespaced_pod(namespace, watch=False)
 

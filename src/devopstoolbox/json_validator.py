@@ -1,68 +1,48 @@
 import json
-import typer
-from pathlib import Path
-from rich import print
+import pathlib
 
-# Initialize the sub-app
+import rich
+import typer
+
 app = typer.Typer(no_args_is_help=True)
 
-def check_single_file(file_path: Path):
-    """
-    Core logic to validate JSON syntax and report errors with line/column.
-    """
-    try:
-        with open(file_path, "r") as file:
-            json.load(file)
-        print(f"[green]✅ Valid:[/green] {file_path}")
-    except json.JSONDecodeError as err:
-        print(f"[red]❌ Invalid:[/red] {file_path}")
-        print(f"   [bold]Error:[/bold] {err.msg}")
-        print(f"   [bold]Location:[/bold] Line {err.lineno}, Column {err.colno}")
-        # Return False so the main command knows at least one file failed
-        return False
-    except Exception as e:
-        print(f"[yellow]⚠️ Could not read {file_path}:[/yellow] {e}")
-        return False
-    return True
 
 @app.command("json")
-def validate_json(
-    path: Path = typer.Argument(..., help="The path to the JSON file or directory"),
-    directory: bool = typer.Option(False, "--dir", help="Scan all JSON files in the directory")
-):
-    """
-    Validate JSON syntax for a specific file or all files in a directory.
-    """
-    success = True
+def validate_json(path: pathlib.Path, recursive: bool = typer.Option(False, help="Scan directories recursively for JSON files")):
+    has_err = False
+    total_files = 0
+    valid_files = 0
+    invalid_files = 0
+    if not path.exists():
+        rich.print(f"[bold red]✖ Path not found:[/bold red] [white]{path}[/white]")
+        raise typer.Exit(1)
 
-    if directory:
-        if not path.is_dir():
-            print(f"[red]Error:[/red] '{path}' is not a directory. Remove --dir or provide a folder.")
-            raise typer.Exit(code=1)
-        
-        # Find all .json files (case-insensitive)
-        files = list(path.glob("**/*.json"))
-        if not files:
-            print(f"[yellow]No JSON files found in {path}[/yellow]")
-            return
+    if path.is_file():
+        files = [path]
 
-        print(f"Scanning directory: [bold]{path}[/bold] ({len(files)} files found)\n")
-        for f in files:
-            if not check_single_file(f):
-                success = False
     else:
-        if not path.is_file():
-            print(f"[red]Error:[/red] File '{path}' not found or is not a file.")
-            raise typer.Exit(code=1)
-        success = check_single_file(path)
+        pattern = "**/*.json" if recursive else "*.json"
+        files = list(path.glob(pattern))
 
-    # Exit with error code 1 if any file failed, so CI/CD pipelines can detect it
-    if not success:
-        raise typer.Exit(code=1)
+    if not files:
+        rich.print(f"[yellow]⚠ No JSON files found in {path}[/yellow]")
+        raise typer.Exit(0)
 
-if __name__ == "__main__":
-    app()
-  
-                 
-                 
+    for f in files:
+        total_files = total_files + 1
+        try:
+            json.loads(f.read_text())
+            rich.print(f"[bold green]✔ Valid JSON:[/bold green] [white]{f}[/white]")
+            valid_files = valid_files + 1
 
+        except json.JSONDecodeError as e:
+            has_err = True
+            rich.print(f"[bold red]✖ Invalid JSON:[/bold red] [white]{f}[/white]")
+            rich.print(f"[red]  → Error at line [bold]{e.lineno}[/bold], column [bold]{e.colno}[/bold]: {e.msg}[/red]")
+            invalid_files = invalid_files + 1
+    rich.print("\n[bold blue]Summary:[/bold blue]")
+    rich.print(f"  Total files checked: [white]{total_files}[/white]")
+    rich.print(f"  Invalid files: [red]{invalid_files}[/red]")
+    rich.print(f"  Valid files: [green]{total_files - invalid_files}[/green]")
+    if has_err:
+        raise typer.Exit(1)
