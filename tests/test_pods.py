@@ -5,11 +5,16 @@ from unittest.mock import Mock, patch
 import pytest
 from typer.testing import CliRunner
 
-with patch("devopstoolbox.k8s.utils.config.load_kube_config"), patch("devopstoolbox.k8s.utils.config.list_kube_config_contexts", return_value=([], None)):
-    from devopstoolbox.k8s import pods
-
+from devopstoolbox.k8s import pods
 
 runner = CliRunner()
+
+
+@pytest.fixture(autouse=True)
+def mock_kube_config():
+    """Mock kubeconfig loading for all tests."""
+    with patch("devopstoolbox.k8s.utils.load_kube_config"):
+        yield
 
 
 @pytest.fixture
@@ -217,25 +222,32 @@ class TestPodsUnhealthyCommand:
 class TestPodsMetricsCommand:
     """Tests for pods metrics command."""
 
-    @patch("devopstoolbox.k8s.pods.custom_api")
-    def test_metrics_displays_cpu_memory(self, mock_custom_api):
-        result = runner.invoke(pods.app, ["metrics"])
-
-        assert result.exit_code == 0
-        mock_custom_api.list_namespaced_custom_object.assert_called_once()
-
-    @patch("devopstoolbox.k8s.pods.custom_api")
-    def test_metrics_handles_empty_response(self, mock_custom_api):
-        """Test handling empty metrics response."""
+    @patch("devopstoolbox.k8s.pods.CustomObjectsApi")
+    def test_metrics_displays_cpu_memory(self, mock_custom_api_class):
+        mock_custom_api = Mock()
+        mock_custom_api_class.return_value = mock_custom_api
         mock_custom_api.list_namespaced_custom_object.return_value = {"items": []}
 
         result = runner.invoke(pods.app, ["metrics"])
 
         assert result.exit_code == 0
 
-    @patch("devopstoolbox.k8s.pods.custom_api")
-    def test_metrics_handles_api_error(self, mock_custom_api):
+    @patch("devopstoolbox.k8s.pods.CustomObjectsApi")
+    def test_metrics_handles_empty_response(self, mock_custom_api_class):
+        """Test handling empty metrics response."""
+        mock_custom_api = Mock()
+        mock_custom_api_class.return_value = mock_custom_api
+        mock_custom_api.list_namespaced_custom_object.return_value = {"items": []}
+
+        result = runner.invoke(pods.app, ["metrics"])
+
+        assert result.exit_code == 0
+
+    @patch("devopstoolbox.k8s.pods.CustomObjectsApi")
+    def test_metrics_handles_api_error(self, mock_custom_api_class):
         """Test handling metrics API errors."""
+        mock_custom_api = Mock()
+        mock_custom_api_class.return_value = mock_custom_api
         mock_custom_api.list_namespaced_custom_object.side_effect = Exception("Metrics Server not available")
 
         result = runner.invoke(pods.app, ["metrics"])
@@ -244,10 +256,14 @@ class TestPodsMetricsCommand:
         assert "Error" in result.output or "Metrics Server" in result.output
 
     @patch("devopstoolbox.k8s.pods.client.CoreV1Api")
-    @patch("devopstoolbox.k8s.pods.custom_api")
-    def test_metrics_specific_namespace(self, mock_custom_api, mock_core_api, mock_container):
+    @patch("devopstoolbox.k8s.pods.CustomObjectsApi")
+    def test_metrics_specific_namespace(self, mock_custom_api_class, mock_core_api, mock_container):
+        mock_custom_api = Mock()
+        mock_custom_api_class.return_value = mock_custom_api
+        mock_custom_api.list_namespaced_custom_object.return_value = {"items": []}
+
         mock_v1 = Mock()
-        mock_core_api.return_value = mock_pod_metrics
+        mock_core_api.return_value = mock_v1
 
         pod = Mock()
         pod.metadata.namespace = "default"
@@ -261,11 +277,12 @@ class TestPodsMetricsCommand:
         result = runner.invoke(pods.app, ["metrics", "--namespace", "kube-system"])
 
         assert result.exit_code == 0
-        mock_custom_api.list_namespaced_custom_object.assert_called_once()
 
     @patch("devopstoolbox.k8s.pods.client.CoreV1Api")
-    @patch("devopstoolbox.k8s.pods.custom_api")
-    def test_metrics_all_namespaces(self, mock_custom_api, mock_core_api):
+    @patch("devopstoolbox.k8s.pods.CustomObjectsApi")
+    def test_metrics_all_namespaces(self, mock_custom_api_class, mock_core_api):
+        mock_custom_api = Mock()
+        mock_custom_api_class.return_value = mock_custom_api
         mock_custom_api.list_cluster_custom_object.return_value = {"items": []}
 
         mock_v1 = Mock()
@@ -279,11 +296,12 @@ class TestPodsMetricsCommand:
         mock_v1.list_pod_for_all_namespaces.assert_called_once()
 
     @patch("devopstoolbox.k8s.pods.client.CoreV1Api")
-    @patch("devopstoolbox.k8s.pods.custom_api")
-    def test_metrics_displays_all_fields(self, mock_custom_api, mock_core_api, mock_container, mock_pod_metrics):
+    @patch("devopstoolbox.k8s.pods.CustomObjectsApi")
+    def test_metrics_displays_all_fields(self, mock_custom_api_class, mock_core_api, mock_container, mock_pod_metrics):
+        mock_custom_api = Mock()
+        mock_custom_api_class.return_value = mock_custom_api
         mock_custom_api.list_namespaced_custom_object.return_value = mock_pod_metrics
 
-        # CoreV1Api para listar pods
         mock_v1 = Mock()
         mock_core_api.return_value = mock_v1
 

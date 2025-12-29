@@ -9,16 +9,17 @@ from devopstoolbox.k8s import utils
 
 app = typer.Typer(no_args_is_help=True)
 console = Console()
-custom_api = CustomObjectsApi()
 
 
 @app.command()
 def list(namespace: Annotated[str, typer.Option("--namespace", "-n")] = None, all_namespaces: Annotated[bool, typer.Option("--all-namespaces", "-A")] = False):
     """List cert-manager certificates with renewal time and status."""
+    utils.load_kube_config()
     namespace = namespace or utils.get_current_namespace()
     scope = "all namespaces" if all_namespaces else f"namespace {namespace}"
     console.print(f"[bold blue]Listing certificates resources in {scope}...[/bold blue]")
 
+    custom_api = CustomObjectsApi()
     try:
         if all_namespaces:
             certificates = custom_api.list_cluster_custom_object(group="cert-manager.io", version="v1", plural="certificates")
@@ -47,10 +48,12 @@ def list(namespace: Annotated[str, typer.Option("--namespace", "-n")] = None, al
 @app.command()
 def not_ready(namespace: Annotated[str, typer.Option("--namespace", "-n")] = None, all_namespaces: Annotated[bool, typer.Option("--all-namespaces", "-A")] = False):
     """List certificates that are not in Ready state."""
+    utils.load_kube_config()
     namespace = namespace or utils.get_current_namespace()
     scope = "all namespaces" if all_namespaces else f"namespace {namespace}"
     console.print(f"[bold blue]Listing certificates resources in {scope}...[/bold blue]")
 
+    custom_api = CustomObjectsApi()
     try:
         if all_namespaces:
             certificates = custom_api.list_cluster_custom_object(group="cert-manager.io", version="v1", plural="certificates")

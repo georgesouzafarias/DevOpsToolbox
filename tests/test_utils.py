@@ -1,5 +1,8 @@
 """Tests for devopstoolbox.k8s.utils module."""
 
+from unittest.mock import patch
+
+from devopstoolbox.k8s import utils
 from devopstoolbox.k8s.utils import calculate_cpu_percentage, calculate_memory_percentage, parse_cpu, parse_memory
 
 
@@ -135,3 +138,76 @@ class TestMemoryPercentage:
         assert calculate_memory_percentage("1024", "1024") == "100.00%"
         assert calculate_memory_percentage("1024", "512") == "200.00%"
         assert calculate_memory_percentage("512", "1024") == "50.00%"
+
+
+class TestLoadKubeConfig:
+    """Tests for load_kube_config function."""
+
+    def setup_method(self):
+        utils._kube_config_loaded = False
+
+    @patch("devopstoolbox.k8s.utils.config.load_kube_config")
+    def test_load_kube_config_success(self, mock_load):
+        """Test successful kubeconfig loading."""
+        utils.load_kube_config()
+
+        mock_load.assert_called_once()
+        assert utils._kube_config_loaded is True
+
+    @patch("devopstoolbox.k8s.utils.config.load_incluster_config")
+    @patch("devopstoolbox.k8s.utils.config.load_kube_config")
+    def test_load_kube_config_fallback_to_incluster(self, mock_load, mock_incluster):
+        """Test fallback to in-cluster config when kubeconfig fails."""
+        mock_load.side_effect = utils.config.ConfigException("No kubeconfig")
+
+        utils.load_kube_config()
+
+        mock_load.assert_called_once()
+        mock_incluster.assert_called_once()
+        assert utils._kube_config_loaded is True
+
+    @patch("devopstoolbox.k8s.utils.config.load_kube_config")
+    def test_load_kube_config_only_loads_once(self, mock_load):
+        """Test that config is only loaded once."""
+        utils.load_kube_config()
+        utils.load_kube_config()
+        utils.load_kube_config()
+
+        mock_load.assert_called_once()
+
+
+class TestGetCurrentNamespace:
+    """Tests for get_current_namespace function."""
+
+    @patch("devopstoolbox.k8s.utils.config.list_kube_config_contexts")
+    def test_get_namespace_from_context(self, mock_contexts):
+        """Test getting namespace from active context."""
+        mock_contexts.return_value = (
+            [],
+            {"context": {"namespace": "my-namespace"}},
+        )
+
+        result = utils.get_current_namespace()
+
+        assert result == "my-namespace"
+
+    @patch("devopstoolbox.k8s.utils.config.list_kube_config_contexts")
+    def test_get_default_when_no_namespace_in_context(self, mock_contexts):
+        """Test returning default when no namespace in context."""
+        mock_contexts.return_value = (
+            [],
+            {"context": {}},
+        )
+
+        result = utils.get_current_namespace()
+
+        assert result == "default"
+
+    @patch("devopstoolbox.k8s.utils.config.list_kube_config_contexts")
+    def test_get_default_on_exception(self, mock_contexts):
+        """Test returning default on exception."""
+        mock_contexts.side_effect = Exception("No kubeconfig")
+
+        result = utils.get_current_namespace()
+
+        assert result == "default"

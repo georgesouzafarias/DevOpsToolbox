@@ -14,6 +14,7 @@ console = Console()
 @app.command()
 def list(namespace: Annotated[str, typer.Option("--namespace", "-n")] = None, all_namespaces: Annotated[bool, typer.Option("--all-namespaces", "-A")] = False):
     """List services"""
+    utils.load_kube_config()
     namespace = namespace or utils.get_current_namespace()
     scope = "all namespaces" if all_namespaces else f"namespace {namespace}"
     console.print(f"[bold blue]Listing services in {scope}...[/bold blue]")
