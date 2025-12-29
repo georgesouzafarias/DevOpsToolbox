@@ -3,15 +3,18 @@
 from unittest.mock import Mock, patch
 
 import pytest
+from typer.testing import CliRunner
 
-# Patch before importing the module
-with patch("kubernetes.config.load_kube_config"):
-    from typer.testing import CliRunner
-
-    from devopstoolbox.k8s import services
-
+from devopstoolbox.k8s import services
 
 runner = CliRunner()
+
+
+@pytest.fixture(autouse=True)
+def mock_kube_config():
+    """Mock kubeconfig loading for all tests."""
+    with patch("devopstoolbox.k8s.utils.load_kube_config"):
+        yield
 
 
 @pytest.fixture

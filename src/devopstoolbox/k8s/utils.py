@@ -2,10 +2,19 @@ import re
 
 from kubernetes import config
 
-try:
-    config.load_kube_config()
-except config.ConfigException:
-    config.load_incluster_config()
+_kube_config_loaded = False
+
+
+def load_kube_config():
+    """Load kubeconfig when K8s commands are called."""
+    global _kube_config_loaded
+    if _kube_config_loaded:
+        return
+    try:
+        config.load_kube_config()
+    except config.ConfigException:
+        config.load_incluster_config()
+    _kube_config_loaded = True
 
 
 def get_current_namespace():
@@ -13,7 +22,7 @@ def get_current_namespace():
     try:
         _, active_context = config.list_kube_config_contexts()
         return active_context["context"].get("namespace", "default")
-    except (config.ConfigException, KeyError, TypeError, ValueError):
+    except Exception:
         return "default"
 
 
