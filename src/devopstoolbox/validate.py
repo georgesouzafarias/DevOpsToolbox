@@ -30,7 +30,7 @@ def validate_json_file(file_path: Path) -> tuple[bool, str]:
     """Validate a single JSON file and return (is_valid, error_message)."""
     try:
         with open(file_path) as f:
-            list(pyjson.load(f))
+            pyjson.load(f)
         return True, ""
     except pyjson.JSONDecodeError as e:
         line = getattr(e, "lineno", None)
