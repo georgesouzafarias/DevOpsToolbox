@@ -1,3 +1,4 @@
+import json as pyjson
 from pathlib import Path
 from typing import Annotated
 
@@ -17,6 +18,21 @@ def validate_yaml_file(file_path: Path) -> tuple[bool, str]:
             list(pyyaml.safe_load_all(f))
         return True, ""
     except pyyaml.YAMLError as e:
+        if hasattr(e, "problem_mark"):
+            mark = e.problem_mark
+            return False, f"Line {mark.line + 1}, Column {mark.column + 1}: {e.problem}"
+        return False, str(e)
+    except Exception as e:
+        return False, str(e)
+
+
+def validate_json_file(file_path: Path) -> tuple[bool, str]:
+    """Validate a single JSON file and return (is_valid, error_message)."""
+    try:
+        with open(file_path) as f:
+            list(pyjson.load(f))
+        return True, ""
+    except pyjson.JSONDecodeError as e:
         if hasattr(e, "problem_mark"):
             mark = e.problem_mark
             return False, f"Line {mark.line + 1}, Column {mark.column + 1}: {e.problem}"
@@ -66,6 +82,54 @@ def yaml(
         else:
             invalid_count += 1
             table.add_row(str(yaml_file), "[red]Invalid[/red]", error)
+
+    console.print(table)
+    console.print(f"\n[bold]Summary:[/bold] {valid_count} valid, {invalid_count} invalid")
+
+    if invalid_count > 0:
+        raise typer.Exit(1)
+
+
+@app.command()
+def json(
+    file: Annotated[Path, typer.Option("--file", "-f", exists=True, file_okay=True, dir_okay=False, resolve_path=True)] = None,
+    directory: Annotated[Path, typer.Option("--directory", "-d", exists=True, file_okay=False, dir_okay=True, resolve_path=True)] = None,
+):
+    """Validate JSON files for syntax errors."""
+    if file is None and directory is None:
+        console.print("[red]Error: You must provide either a file or a directory.[/red]")
+        raise typer.Exit(1)
+
+    if file and directory:
+        console.print("[red]Error: Provide either a file or a directory, not both.[/red]")
+        raise typer.Exit(1)
+
+    files_to_validate = []
+    if file:
+        files_to_validate.append(file)
+    elif directory:
+        files_to_validate.extend(directory.glob("**/*.json"))
+
+    if not files_to_validate:
+        console.print("[yellow]No JSON files found.[/yellow]")
+        raise typer.Exit(0)
+
+    table = Table(title="JSON Validation Results")
+    table.add_column("File", style="cyan")
+    table.add_column("Status", justify="center")
+    table.add_column("Error", style="red")
+
+    valid_count = 0
+    invalid_count = 0
+
+    for json_file in sorted(files_to_validate):
+        is_valid, error = validate_json_file(json_file)
+        if is_valid:
+            valid_count += 1
+            table.add_row(str(json_file), "[green]Valid[/green]", "")
+        else:
+            invalid_count += 1
+            table.add_row(str(json_file), "[red]Invalid[/red]", error)
 
     console.print(table)
     console.print(f"\n[bold]Summary:[/bold] {valid_count} valid, {invalid_count} invalid")
