@@ -3,15 +3,18 @@
 from unittest.mock import Mock, patch
 
 import pytest
+from typer.testing import CliRunner
 
-# Patch before importing the module
-with patch("kubernetes.config.load_kube_config"):
-    from typer.testing import CliRunner
-
-    from devopstoolbox.k8s import services
-
+from devopstoolbox.k8s import services
 
 runner = CliRunner()
+
+
+@pytest.fixture(autouse=True)
+def mock_kube_config():
+    """Mock kubeconfig loading for all tests."""
+    with patch("devopstoolbox.k8s.utils.load_kube_config"):
+        yield
 
 
 @pytest.fixture
@@ -38,8 +41,7 @@ class TestServicesListCommand:
         mock_services.items = [mock_service]
         mock_v1.list_namespaced_service.return_value = mock_services
 
-        # Single-command app, no subcommand needed
-        result = runner.invoke(services.app, [])
+        result = runner.invoke(services.app, ["-n", "default"])
 
         assert result.exit_code == 0
         mock_v1.list_namespaced_service.assert_called_once_with("default", watch=False)

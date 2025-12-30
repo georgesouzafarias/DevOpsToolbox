@@ -4,8 +4,8 @@ from unittest.mock import patch
 
 from typer.testing import CliRunner
 
-# Patch before importing the modules
-with patch("devopstoolbox.k8s.utils.get_kube_config"), patch("kubernetes.config.load_kube_config"):
+with patch("devopstoolbox.k8s.utils.config.load_kube_config"), patch("devopstoolbox.k8s.utils.config.list_kube_config_contexts") as mock_contexts:
+    mock_contexts.return_value = ([], {"context": {"namespace": "default"}})
     from devopstoolbox.main import app
 
 

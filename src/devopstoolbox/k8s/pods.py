@@ -1,3 +1,5 @@
+from typing import Annotated
+
 import typer
 from kubernetes import client
 from kubernetes.client import CustomObjectsApi
@@ -8,13 +10,13 @@ from devopstoolbox.k8s import utils
 
 app = typer.Typer(no_args_is_help=True)
 console = Console()
-config = utils.get_kube_config()
-custom_api = CustomObjectsApi()
 
 
 @app.command()
-def list(namespace: str = "default", all_namespaces: bool = False):
+def list(namespace: Annotated[str, typer.Option("--namespace", "-n")] = None, all_namespaces: Annotated[bool, typer.Option("--all-namespaces", "-A")] = False):
     """List pods"""
+    utils.load_kube_config()
+    namespace = namespace or utils.get_current_namespace()
     scope = "all namespaces" if all_namespaces else f"namespace {namespace}"
     console.print(f"[bold blue]Listing pods in {scope}...[/bold blue]")
 
@@ -39,13 +41,16 @@ def list(namespace: str = "default", all_namespaces: bool = False):
 
 
 @app.command()
-def metrics(namespace: str = "default", all_namespaces: bool = False):
+def metrics(namespace: Annotated[str, typer.Option("--namespace", "-n")] = None, all_namespaces: Annotated[bool, typer.Option("--all-namespaces", "-A")] = False):
     """
     Retrieves CPU and memory resources (requests, limits, usage) for all pods.
     """
+    utils.load_kube_config()
+    namespace = namespace or utils.get_current_namespace()
     scope = "all namespaces" if all_namespaces else f"namespace {namespace}"
     console.print(f"[bold blue]Listing pod resources in {scope}...[/bold blue]")
 
+    custom_api = CustomObjectsApi()
     metrics_by_container = {}
     try:
         if all_namespaces:
@@ -112,10 +117,12 @@ def metrics(namespace: str = "default", all_namespaces: bool = False):
 
 
 @app.command()
-def unhealthy(namespace: str = "default", all_namespaces: bool = False):
+def unhealthy(namespace: Annotated[str, typer.Option("--namespace", "-n")] = None, all_namespaces: Annotated[bool, typer.Option("--all-namespaces", "-A")] = False):
     """
     List pods with issues (not in Running or Succeeded state).
     """
+    utils.load_kube_config()
+    namespace = namespace or utils.get_current_namespace()
     scope = "all namespaces" if all_namespaces else f"namespace {namespace}"
     console.print(f"[bold blue]Listing Issued pods in {scope}...[/bold blue]")
 
