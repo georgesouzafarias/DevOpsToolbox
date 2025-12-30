@@ -4,7 +4,7 @@ import pytest
 from typer.testing import CliRunner
 
 from devopstoolbox.main import app as main_app
-from devopstoolbox.validate import validate_yaml_file
+from devopstoolbox.validate import validate_json_file, validate_yaml_file
 
 runner = CliRunner()
 
@@ -30,6 +30,14 @@ key2: value2
 EMPTY_YAML = ""
 
 SIMPLE_YAML = "key: value\n"
+
+VALID_JSON = '{"key": "value", "list": ["item1", "item2"]}'
+
+INVALID_JSON = '{"key": "value", "bad": }'
+
+EMPTY_JSON = "{}"
+
+SIMPLE_JSON = '{"key": "value"}'
 
 
 @pytest.fixture
@@ -141,5 +149,117 @@ class TestValidateYamlCommand:
 
     def test_validate_nested_directory(self, nested_directory):
         result = runner.invoke(main_app, ["validate", "yaml", "-d", str(nested_directory)])
+        assert result.exit_code == 0
+        assert "2 valid, 0 invalid" in result.stdout
+
+
+@pytest.fixture
+def valid_json_file(tmp_path):
+    """Create a valid JSON file."""
+    json_file = tmp_path / "valid.json"
+    json_file.write_text(VALID_JSON)
+    return json_file
+
+
+@pytest.fixture
+def invalid_json_file(tmp_path):
+    """Create an invalid JSON file."""
+    json_file = tmp_path / "invalid.json"
+    json_file.write_text(INVALID_JSON)
+    return json_file
+
+
+@pytest.fixture
+def directory_with_valid_json_files(tmp_path):
+    """Create a directory with valid JSON files."""
+    (tmp_path / "valid1.json").write_text(SIMPLE_JSON)
+    (tmp_path / "valid2.json").write_text('{"name": "test"}')
+    return tmp_path
+
+
+@pytest.fixture
+def directory_with_mixed_json_files(tmp_path):
+    """Create a directory with valid and invalid JSON files."""
+    (tmp_path / "valid.json").write_text(SIMPLE_JSON)
+    (tmp_path / "invalid.json").write_text(INVALID_JSON)
+    return tmp_path
+
+
+@pytest.fixture
+def nested_json_directory(tmp_path):
+    """Create a nested directory structure with JSON files."""
+    subdir = tmp_path / "subdir"
+    subdir.mkdir()
+    (tmp_path / "root.json").write_text('{"level": "root"}')
+    (subdir / "nested.json").write_text('{"level": "nested"}')
+    return tmp_path
+
+
+class TestValidateJsonFile:
+    def test_valid_json(self, valid_json_file):
+        is_valid, error = validate_json_file(valid_json_file)
+        assert is_valid is True
+        assert error == ""
+
+    def test_invalid_json(self, invalid_json_file):
+        is_valid, error = validate_json_file(invalid_json_file)
+        assert is_valid is False
+        assert error != ""
+
+    def test_empty_json(self, tmp_path):
+        json_file = tmp_path / "empty.json"
+        json_file.write_text(EMPTY_JSON)
+        is_valid, error = validate_json_file(json_file)
+        assert is_valid is True
+        assert error == ""
+
+    def test_json_with_line_error_info(self, tmp_path):
+        json_file = tmp_path / "error.json"
+        json_file.write_text('{\n  "key": "value",\n  "bad": \n}')
+        is_valid, error = validate_json_file(json_file)
+        assert is_valid is False
+        assert "line" in error.lower() or "Line" in error
+
+
+class TestValidateJsonCommand:
+    def test_validate_single_valid_file(self, valid_json_file):
+        result = runner.invoke(main_app, ["validate", "json", "-f", str(valid_json_file)])
+        assert result.exit_code == 0
+        assert "Valid" in result.stdout
+        assert "1 valid, 0 invalid" in result.stdout
+
+    def test_validate_single_invalid_file(self, invalid_json_file):
+        result = runner.invoke(main_app, ["validate", "json", "-f", str(invalid_json_file)])
+        assert result.exit_code == 1
+        assert "Invalid" in result.stdout
+        assert "0 valid, 1 invalid" in result.stdout
+
+    def test_validate_directory(self, directory_with_valid_json_files):
+        result = runner.invoke(main_app, ["validate", "json", "-d", str(directory_with_valid_json_files)])
+        assert result.exit_code == 0
+        assert "2 valid, 0 invalid" in result.stdout
+
+    def test_validate_directory_mixed_results(self, directory_with_mixed_json_files):
+        result = runner.invoke(main_app, ["validate", "json", "-d", str(directory_with_mixed_json_files)])
+        assert result.exit_code == 1
+        assert "1 valid, 1 invalid" in result.stdout
+
+    def test_validate_empty_directory(self, tmp_path):
+        result = runner.invoke(main_app, ["validate", "json", "-d", str(tmp_path)])
+        assert result.exit_code == 0
+        assert "No JSON files found" in result.stdout
+
+    def test_no_file_or_directory_provided(self):
+        result = runner.invoke(main_app, ["validate", "json"])
+        assert result.exit_code == 1
+        assert "You must provide either a file or a directory" in result.stdout
+
+    def test_both_file_and_directory_provided(self, valid_json_file):
+        result = runner.invoke(main_app, ["validate", "json", "-f", str(valid_json_file), "-d", str(valid_json_file.parent)])
+        assert result.exit_code == 1
+        assert "Provide either a file or a directory, not both" in result.stdout
+
+    def test_validate_nested_directory(self, nested_json_directory):
+        result = runner.invoke(main_app, ["validate", "json", "-d", str(nested_json_directory)])
         assert result.exit_code == 0
         assert "2 valid, 0 invalid" in result.stdout
