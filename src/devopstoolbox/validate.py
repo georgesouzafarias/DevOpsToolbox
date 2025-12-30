@@ -33,9 +33,10 @@ def validate_json_file(file_path: Path) -> tuple[bool, str]:
             list(pyjson.load(f))
         return True, ""
     except pyjson.JSONDecodeError as e:
-        if hasattr(e, "problem_mark"):
-            mark = e.problem_mark
-            return False, f"Line {mark.line + 1}, Column {mark.column + 1}: {e.problem}"
+        line = getattr(e, "lineno", None)
+        col = getattr(e, "colno", None)
+        if line is not None and col is not None:
+            return False, f"Line {line}, Column {col}: {e.msg}"
         return False, str(e)
     except Exception as e:
         return False, str(e)
