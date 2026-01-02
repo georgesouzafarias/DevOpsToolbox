@@ -35,6 +35,13 @@ def parse_cpu(cpu_str: str, return_number: bool = False):
             return millicores
         else:
             return f"{millicores:.2f}m"
+    elif cpu_str.endswith("u"):
+        microcores = int(cpu_str[:-1])
+        millicores = microcores / 1_000
+        if return_number:
+            return millicores
+        else:
+            return f"{millicores:.2f}m"
     elif cpu_str.endswith("m"):
         if return_number:
             return int(cpu_str[:-1])
