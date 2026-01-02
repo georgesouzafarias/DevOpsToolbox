@@ -1,6 +1,10 @@
 import re
 
+import urllib3
 from kubernetes import config
+
+# Hide InsecureRequestWarning when CA certificate is not configured
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 _kube_config_loaded = False
 
