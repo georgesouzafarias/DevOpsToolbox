@@ -1,6 +1,10 @@
 import re
 
+import urllib3
 from kubernetes import config
+
+# Hide InsecureRequestWarning when CA certificate is not configured
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 _kube_config_loaded = False
 
@@ -31,6 +35,13 @@ def parse_cpu(cpu_str: str, return_number: bool = False):
     if cpu_str.endswith("n"):
         nanocores = int(cpu_str[:-1])
         millicores = nanocores / 1_000_000
+        if return_number:
+            return millicores
+        else:
+            return f"{millicores:.2f}m"
+    elif cpu_str.endswith("u"):
+        microcores = int(cpu_str[:-1])
+        millicores = microcores / 1_000
         if return_number:
             return millicores
         else:
