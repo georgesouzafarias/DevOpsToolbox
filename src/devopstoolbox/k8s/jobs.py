@@ -27,17 +27,17 @@ def list(namespace: Annotated[str, typer.Option("--namespace", "-n")] = None, al
         table.add_column("Namespace", style="cyan", justify="center")
         table.add_column("Job Name", style="green", justify="center")
         table.add_column("Suspended?", style="green", justify="center")
-        # table.add_column("Restart Count", justify="center")
+        table.add_column("Status", style="green", justify="center")
 
         for job in jobs.items:
+            job_status = "-"
             print(job.metadata.name)
-            table.add_row(job.metadata.namespace or "-", job.metadata.name, f"{job.spec.suspend}")
-
-        # for job in jobs.items:
-        #     statuses = job.status.container_statuses or []
-        #     restart_count = sum((status.restart_count or 0) for status in statuses)
-        #     table.add_row(job.metadata.namespace or "-", job.metadata.name, job.status.phase, str(restart_count))
-
+            for condition in job.status.conditions:
+                if condition.type == "Failed":
+                    job_status = "Failed"
+                else:
+                    job_status = "Success"
+            table.add_row(job.metadata.namespace or "-", job.metadata.name, f"{job.spec.suspend}", f"{job_status}")
         console.print(table)
     except Exception as err:
         console.print(f"[bold red]Error accessing Kubernetes:[/bold red] \n\n{err}")
