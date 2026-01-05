@@ -28,6 +28,7 @@ def list(namespace: Annotated[str, typer.Option("--namespace", "-n")] = None, al
         table.add_column("Job Name", style="green", justify="center")
         table.add_column("Suspended?", style="green", justify="center")
         table.add_column("Status", style="green", justify="center")
+        table.add_column("Age", style="green", justify="center")
 
         for job in jobs.items:
             job_status = "Running"
@@ -40,12 +41,39 @@ def list(namespace: Annotated[str, typer.Option("--namespace", "-n")] = None, al
                         job_status = "[green]Complete[/green]"
 
             suspended = "Yes" if job.spec.suspend else "No"
-            table.add_row(
-                job.metadata.namespace or "-",
-                job.metadata.name,
-                suspended,
-                job_status
-            )
+            table.add_row(job.metadata.namespace or "-", job.metadata.name, suspended, job_status, utils.calculate_age(job.status.start_time))
+        console.print(table)
+    except Exception as err:
+        console.print(f"[bold red]Error accessing Kubernetes:[/bold red] \n\n{err}")
+
+
+@app.command()
+def failed(namespace: Annotated[str, typer.Option("--namespace", "-n")] = None, all_namespaces: Annotated[bool, typer.Option("--all-namespaces", "-A")] = False):
+    """List only failed Jobs"""
+    utils.load_kube_config()
+    namespace = namespace or utils.get_current_namespace()
+    scope = "all namespaces" if all_namespaces else f"namespace {namespace}"
+    console.print(f"[bold blue]Listing jobs in {scope}...[/bold blue]")
+
+    try:
+        v1 = client.BatchV1Api()
+        jobs = v1.list_job_for_all_namespaces(watch=False) if all_namespaces else v1.list_namespaced_job(namespace=namespace, watch=False)
+
+        table = Table(title=f"Jobs in {scope}")
+        table.add_column("Namespace", style="cyan", justify="center")
+        table.add_column("Job Name", style="green", justify="center")
+        table.add_column("Status", style="green", justify="center")
+        table.add_column("Message", style="green", justify="center")
+        table.add_column("Age", style="green", justify="center")
+
+        for job in jobs.items:
+            job_status = "Running"
+            if job.status.conditions:
+                for condition in job.status.conditions:
+                    if condition.type == "Failed" and condition.status == "True":
+                        job_status = "[red]Failed[/red]"
+                        table.add_row(job.metadata.namespace or "-", job.metadata.name, job_status, condition.message, utils.calculate_age(job.status.start_time))
+                        break
         console.print(table)
     except Exception as err:
         console.print(f"[bold red]Error accessing Kubernetes:[/bold red] \n\n{err}")

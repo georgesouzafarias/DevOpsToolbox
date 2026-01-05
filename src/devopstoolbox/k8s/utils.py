@@ -1,4 +1,5 @@
 import re
+from datetime import datetime, timezone
 
 import urllib3
 from kubernetes import config
@@ -81,6 +82,7 @@ def parse_memory(mem_str: str, return_number: bool = False):
 
 
 def calculate_cpu_percentage(usage, limit):
+    """Calculate CPU usage percentage from usage and limit values."""
     if usage is None or limit is None or not (usage[:-1].isdigit() or usage.isdigit()) or not (limit[:-1].isdigit() or limit.isdigit()):
         return "-"
     else:
@@ -89,8 +91,25 @@ def calculate_cpu_percentage(usage, limit):
 
 
 def calculate_memory_percentage(usage, limit):
+    """Calculate Memory usage percentage from usage and limit values."""
     if usage is None or limit is None or not usage[:-2].isdigit() or not limit[:-2].isdigit():
         return "-"
     else:
         result = parse_memory(usage, return_number=True) / parse_memory(limit, return_number=True) * 100
         return f"{result:.2f}%"
+
+
+def calculate_age(start_time):
+    """Format a timedelta object into a human-readable string."""
+    td = datetime.now(timezone.utc) - start_time
+    days = td.days
+    hours, remainder = divmod(td.seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    if days > 0:
+        return f"{days}d"
+    elif days == 0 and hours > 0:
+        return f"{hours}h{minutes}m"
+    elif hours == 0 and minutes >= 0:
+        return f"{minutes}m{seconds}s"
+    else:
+        return f"{seconds}s"
