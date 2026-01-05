@@ -30,14 +30,22 @@ def list(namespace: Annotated[str, typer.Option("--namespace", "-n")] = None, al
         table.add_column("Status", style="green", justify="center")
 
         for job in jobs.items:
-            job_status = "-"
-            print(job.metadata.name)
-            for condition in job.status.conditions:
-                if condition.type == "Failed":
-                    job_status = "Failed"
-                else:
-                    job_status = "Success"
-            table.add_row(job.metadata.namespace or "-", job.metadata.name, f"{job.spec.suspend}", f"{job_status}")
+            job_status = "Running"
+            if job.status.conditions:
+                for condition in job.status.conditions:
+                    if condition.type == "Failed" and condition.status == "True":
+                        job_status = "[red]Failed[/red]"
+                        break
+                    elif condition.type == "Complete" and condition.status == "True":
+                        job_status = "[green]Complete[/green]"
+
+            suspended = "Yes" if job.spec.suspend else "No"
+            table.add_row(
+                job.metadata.namespace or "-",
+                job.metadata.name,
+                suspended,
+                job_status
+            )
         console.print(table)
     except Exception as err:
         console.print(f"[bold red]Error accessing Kubernetes:[/bold red] \n\n{err}")
