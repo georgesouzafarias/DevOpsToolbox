@@ -16,6 +16,13 @@ class TestParseCpu:
         assert parse_cpu("23434n") == "0.02m"
         assert parse_cpu("25160674n") == "25.16m"
 
+    def test_parse_microcores(self):
+        """Test parsing microcores to millicores."""
+        assert parse_cpu("100u") == "0.10m"
+        assert parse_cpu("1000u") == "1.00m"
+        assert parse_cpu("5000u") == "5.00m"
+        assert parse_cpu("500u") == "0.50m"
+
     def test_parse_millicores(self):
         """Test that millicores are returned as-is."""
         assert parse_cpu("100m") == "100m"
@@ -31,6 +38,7 @@ class TestParseCpu:
     def test_parse_zero(self):
         """Test parsing zero values."""
         assert parse_cpu("0n") == "0.00m"
+        assert parse_cpu("0u") == "0.00m"
         assert parse_cpu("0m") == "0m"
         assert parse_cpu("0") == "0.00m"
 
@@ -89,6 +97,11 @@ class TestCpuPercentage:
     def test_parse_nanocores(self):
         assert calculate_cpu_percentage("10000n", "300000n") == "3.33%"
         assert calculate_cpu_percentage("300000n", "300000n") == "100.00%"
+
+    def test_parse_microcores(self):
+        assert calculate_cpu_percentage("100u", "1000u") == "10.00%"
+        assert calculate_cpu_percentage("1000u", "1000u") == "100.00%"
+        assert calculate_cpu_percentage("500u", "1000u") == "50.00%"
 
     def test_parse_milicores(self):
         assert calculate_cpu_percentage("10000m", "300000m") == "3.33%"
