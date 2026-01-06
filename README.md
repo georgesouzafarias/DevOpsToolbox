@@ -9,7 +9,7 @@ A Python-based CLI toolkit for automating daily DevOps operations.
 
 ## Features
 
-- **Kubernetes Management**: Manage pods, services, and certificates from the command line
+- **Kubernetes Management**: Manage pods, services, jobs, and certificates from the command line
 - **File Validation**: Validate YAML and JSON files for syntax errors with detailed error reporting
 - **Human-readable Output**: Formatted tables with Rich for clear visualization
 - **Metrics Support**: View CPU and memory usage for pods (requires Metrics Server)
@@ -86,6 +86,22 @@ devopstoolbox k8s services list -n kube-system
 devopstoolbox k8s services list -A
 ```
 
+### Jobs Management
+
+```bash
+# List all jobs in default namespace
+devopstoolbox k8s jobs list
+
+# List all jobs in a specific namespace
+devopstoolbox k8s jobs list -n batch
+
+# List all jobs across all namespaces
+devopstoolbox k8s jobs list -A
+
+# List only failed jobs
+devopstoolbox k8s jobs failed -A
+```
+
 ### Certificates Management
 
 ```bash
@@ -124,6 +140,8 @@ devopstoolbox validate json -d ./configs
 | `devopstoolbox k8s pods metrics`           | Show CPU and memory usage per container    |
 | `devopstoolbox k8s pods unhealthy`         | List pods not in Running/Succeeded state   |
 | `devopstoolbox k8s services list`          | List services with type and traffic policy |
+| `devopstoolbox k8s jobs list`              | List jobs with status and age              |
+| `devopstoolbox k8s jobs failed`            | List only failed jobs with error messages  |
 | `devopstoolbox k8s certificates list`      | List cert-manager certificates             |
 | `devopstoolbox k8s certificates not-ready` | List certificates not in Ready state       |
 | `devopstoolbox validate yaml`              | Validate YAML files for syntax errors      |
