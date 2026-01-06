@@ -1,9 +1,10 @@
 """Tests for devopstoolbox.k8s.utils module."""
 
+from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
 from devopstoolbox.k8s import utils
-from devopstoolbox.k8s.utils import calculate_cpu_percentage, calculate_memory_percentage, parse_cpu, parse_memory
+from devopstoolbox.k8s.utils import calculate_age, calculate_cpu_percentage, calculate_memory_percentage, parse_cpu, parse_memory
 
 
 class TestParseCpu:
@@ -224,3 +225,40 @@ class TestGetCurrentNamespace:
         result = utils.get_current_namespace()
 
         assert result == "default"
+
+
+class TestCalculateAge:
+    """Tests for calculate_age function."""
+
+    def test_multiple_days(self):
+        """Test age formatting for multiple days."""
+        assert calculate_age(datetime.now(timezone.utc) - timedelta(days=5)) == "5d"
+        assert calculate_age(datetime.now(timezone.utc) - timedelta(days=30)) == "30d"
+
+    def test_single_day(self):
+        """Test age formatting for exactly one day."""
+        assert calculate_age(datetime.now(timezone.utc) - timedelta(days=1)) == "1d"
+
+    def test_hours_and_minutes(self):
+        """Test age formatting for hours and minutes."""
+        assert calculate_age(datetime.now(timezone.utc) - timedelta(hours=1)) == "1h0m"
+        assert calculate_age(datetime.now(timezone.utc) - timedelta(hours=2, minutes=30)) == "2h30m"
+        assert calculate_age(datetime.now(timezone.utc) - timedelta(hours=23, minutes=59)) == "23h59m"
+
+    def test_minutes_and_seconds(self):
+        """Test age formatting for minutes and seconds."""
+        assert calculate_age(datetime.now(timezone.utc) - timedelta(minutes=5)) == "5m0s"
+        assert calculate_age(datetime.now(timezone.utc) - timedelta(minutes=45, seconds=30)) == "45m30s"
+
+    def test_seconds_only(self):
+        """Test age formatting for seconds only."""
+        assert calculate_age(datetime.now(timezone.utc) - timedelta(seconds=30)) == "0m30s"
+        assert calculate_age(datetime.now(timezone.utc) - timedelta(seconds=5)) == "0m5s"
+
+    def test_zero_age(self):
+        """Test age formatting for zero duration."""
+        assert calculate_age(datetime.now(timezone.utc)) == "0m0s"
+
+    def test_days_ignore_hours(self):
+        """Test that days format ignores hours/minutes."""
+        assert calculate_age(datetime.now(timezone.utc) - timedelta(days=2, hours=5, minutes=30)) == "2d"
