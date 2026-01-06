@@ -27,13 +27,14 @@ def list(namespace: Annotated[str, typer.Option("--namespace", "-n")] = None, al
         table = Table(title=f"Pods in {scope}")
         table.add_column("Namespace", style="cyan", justify="center")
         table.add_column("Pod Name", style="green", justify="center")
-        table.add_column("Status", style="green", justify="center")
         table.add_column("Restart Count", justify="center")
+        table.add_column("Age", justify="center")
+        table.add_column("Status", style="green", justify="center")
 
         for pod in pods.items:
             statuses = pod.status.container_statuses or []
             restart_count = sum((status.restart_count or 0) for status in statuses)
-            table.add_row(pod.metadata.namespace or "-", pod.metadata.name, pod.status.phase, str(restart_count))
+            table.add_row(pod.metadata.namespace or "-", pod.metadata.name, str(restart_count), utils.calculate_age(pod.status.start_time), pod.status.phase)
 
         console.print(table)
     except Exception as err:
@@ -133,14 +134,15 @@ def unhealthy(namespace: Annotated[str, typer.Option("--namespace", "-n")] = Non
         table = Table(title=f"Pods in {scope}")
         table.add_column("Namespace", style="cyan", justify="center")
         table.add_column("Pod Name", style="green", justify="center")
-        table.add_column("Status", style="green", justify="center")
         table.add_column("Restart Count", justify="center")
+        table.add_column("Age", justify="center")
+        table.add_column("Status", style="green", justify="center")
 
         for pod in pods.items:
             statuses = pod.status.container_statuses or []
             restart_count = sum((status.restart_count or 0) for status in statuses)
             if pod.status.phase not in ("Running", "Succeeded"):
-                table.add_row(pod.metadata.namespace or "-", pod.metadata.name, pod.status.phase, str(restart_count))
+                table.add_row(pod.metadata.namespace or "-", pod.metadata.name, str(restart_count), utils.calculate_age(pod.status.start_time), pod.status.phase)
 
         console.print(table)
     except Exception as err:
