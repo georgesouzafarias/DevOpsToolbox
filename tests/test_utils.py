@@ -1,10 +1,12 @@
 """Tests for devopstoolbox.k8s.utils module."""
 
 from datetime import datetime, timedelta, timezone
-from unittest.mock import patch
+from unittest.mock import Mock, patch
+
+import pytest
 
 from devopstoolbox.k8s import utils
-from devopstoolbox.k8s.utils import calculate_age, calculate_cpu_percentage, calculate_memory_percentage, parse_cpu, parse_memory
+from devopstoolbox.k8s.utils import calculate_age, calculate_cpu_percentage, calculate_memory_percentage, fetch_pod_metrics, parse_cpu, parse_memory
 
 
 class TestParseCpu:
@@ -262,3 +264,108 @@ class TestCalculateAge:
     def test_days_ignore_hours(self):
         """Test that days format ignores hours/minutes."""
         assert calculate_age(datetime.now(timezone.utc) - timedelta(days=2, hours=5, minutes=30)) == "2d"
+
+
+class TestFetchPodMetrics:
+    """Tests for fetch_pod_metrics function."""
+
+    @patch("devopstoolbox.k8s.utils.CustomObjectsApi")
+    def test_fetch_metrics_single_namespace(self, mock_custom_api_class):
+        """Test fetching metrics for a single namespace."""
+        mock_custom_api = Mock()
+        mock_custom_api_class.return_value = mock_custom_api
+        mock_custom_api.list_namespaced_custom_object.return_value = {
+            "items": [
+                {
+                    "metadata": {"name": "test-pod", "namespace": "default"},
+                    "containers": [
+                        {"name": "main", "usage": {"cpu": "100m", "memory": "128Mi"}},
+                        {"name": "sidecar", "usage": {"cpu": "50m", "memory": "64Mi"}},
+                    ],
+                }
+            ]
+        }
+
+        result = fetch_pod_metrics("default", all_namespaces=False)
+
+        assert ("default", "test-pod", "main") in result
+        assert ("default", "test-pod", "sidecar") in result
+        assert result[("default", "test-pod", "main")] == {"cpu": "100m", "memory": "128Mi"}
+        assert result[("default", "test-pod", "sidecar")] == {"cpu": "50m", "memory": "64Mi"}
+        mock_custom_api.list_namespaced_custom_object.assert_called_once_with(group="metrics.k8s.io", version="v1beta1", namespace="default", plural="pods")
+
+    @patch("devopstoolbox.k8s.utils.CustomObjectsApi")
+    def test_fetch_metrics_all_namespaces(self, mock_custom_api_class):
+        """Test fetching metrics across all namespaces."""
+        mock_custom_api = Mock()
+        mock_custom_api_class.return_value = mock_custom_api
+        mock_custom_api.list_cluster_custom_object.return_value = {
+            "items": [
+                {
+                    "metadata": {"name": "pod-1", "namespace": "ns1"},
+                    "containers": [{"name": "app", "usage": {"cpu": "200m", "memory": "256Mi"}}],
+                },
+                {
+                    "metadata": {"name": "pod-2", "namespace": "ns2"},
+                    "containers": [{"name": "app", "usage": {"cpu": "300m", "memory": "512Mi"}}],
+                },
+            ]
+        }
+
+        result = fetch_pod_metrics(namespace=None, all_namespaces=True)
+
+        assert ("ns1", "pod-1", "app") in result
+        assert ("ns2", "pod-2", "app") in result
+        assert result[("ns1", "pod-1", "app")] == {"cpu": "200m", "memory": "256Mi"}
+        assert result[("ns2", "pod-2", "app")] == {"cpu": "300m", "memory": "512Mi"}
+        mock_custom_api.list_cluster_custom_object.assert_called_once_with(group="metrics.k8s.io", version="v1beta1", plural="pods")
+
+    @patch("devopstoolbox.k8s.utils.CustomObjectsApi")
+    def test_fetch_metrics_empty_response(self, mock_custom_api_class):
+        """Test handling empty metrics response."""
+        mock_custom_api = Mock()
+        mock_custom_api_class.return_value = mock_custom_api
+        mock_custom_api.list_namespaced_custom_object.return_value = {"items": []}
+
+        result = fetch_pod_metrics("default", all_namespaces=False)
+
+        assert result == {}
+
+    @patch("devopstoolbox.k8s.utils.CustomObjectsApi")
+    def test_fetch_metrics_api_error(self, mock_custom_api_class):
+        """Test that API errors are propagated."""
+        mock_custom_api = Mock()
+        mock_custom_api_class.return_value = mock_custom_api
+        mock_custom_api.list_namespaced_custom_object.side_effect = Exception("Metrics Server not available")
+
+        with pytest.raises(Exception, match="Metrics Server not available"):
+            fetch_pod_metrics("default", all_namespaces=False)
+
+    @patch("devopstoolbox.k8s.utils.CustomObjectsApi")
+    def test_fetch_metrics_multiple_pods(self, mock_custom_api_class):
+        """Test fetching metrics for multiple pods."""
+        mock_custom_api = Mock()
+        mock_custom_api_class.return_value = mock_custom_api
+        mock_custom_api.list_namespaced_custom_object.return_value = {
+            "items": [
+                {
+                    "metadata": {"name": "web", "namespace": "default"},
+                    "containers": [{"name": "nginx", "usage": {"cpu": "50m", "memory": "64Mi"}}],
+                },
+                {
+                    "metadata": {"name": "api", "namespace": "default"},
+                    "containers": [{"name": "app", "usage": {"cpu": "150m", "memory": "256Mi"}}],
+                },
+                {
+                    "metadata": {"name": "db", "namespace": "default"},
+                    "containers": [{"name": "postgres", "usage": {"cpu": "500m", "memory": "1Gi"}}],
+                },
+            ]
+        }
+
+        result = fetch_pod_metrics("default", all_namespaces=False)
+
+        assert len(result) == 3
+        assert result[("default", "web", "nginx")] == {"cpu": "50m", "memory": "64Mi"}
+        assert result[("default", "api", "app")] == {"cpu": "150m", "memory": "256Mi"}
+        assert result[("default", "db", "postgres")] == {"cpu": "500m", "memory": "1Gi"}
