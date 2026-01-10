@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 from typer.testing import CliRunner
 
@@ -83,3 +85,10 @@ class TestBase64Util:
         result = runner.invoke(main_app, ["misc", "base64", "-e", "hello", "-f", str(text_file)])
         assert result.exit_code == 1
         assert "Provide only one" in result.stdout
+
+    def test_file_permission_denied(self, text_file):
+        """Test error when file permission is denied"""
+        with patch("builtins.open", side_effect=PermissionError("Permission denied")):
+            result = runner.invoke(main_app, ["misc", "base64", "-f", str(text_file)])
+            assert result.exit_code == 1
+            assert "Permission denied" in result.stdout
