@@ -292,9 +292,7 @@ class TestFetchPodMetrics:
         assert ("default", "test-pod", "sidecar") in result
         assert result[("default", "test-pod", "main")] == {"cpu": "100m", "memory": "128Mi"}
         assert result[("default", "test-pod", "sidecar")] == {"cpu": "50m", "memory": "64Mi"}
-        mock_custom_api.list_namespaced_custom_object.assert_called_once_with(
-            group="metrics.k8s.io", version="v1beta1", namespace="default", plural="pods"
-        )
+        mock_custom_api.list_namespaced_custom_object.assert_called_once_with(group="metrics.k8s.io", version="v1beta1", namespace="default", plural="pods")
 
     @patch("devopstoolbox.k8s.utils.CustomObjectsApi")
     def test_fetch_metrics_all_namespaces(self, mock_custom_api_class):
@@ -320,9 +318,7 @@ class TestFetchPodMetrics:
         assert ("ns2", "pod-2", "app") in result
         assert result[("ns1", "pod-1", "app")] == {"cpu": "200m", "memory": "256Mi"}
         assert result[("ns2", "pod-2", "app")] == {"cpu": "300m", "memory": "512Mi"}
-        mock_custom_api.list_cluster_custom_object.assert_called_once_with(
-            group="metrics.k8s.io", version="v1beta1", plural="pods"
-        )
+        mock_custom_api.list_cluster_custom_object.assert_called_once_with(group="metrics.k8s.io", version="v1beta1", plural="pods")
 
     @patch("devopstoolbox.k8s.utils.CustomObjectsApi")
     def test_fetch_metrics_empty_response(self, mock_custom_api_class):
