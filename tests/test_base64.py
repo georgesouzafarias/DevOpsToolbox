@@ -38,7 +38,7 @@ class TestBase64Util:
         assert result.stdout.strip() == "banana"
 
     def test_decode_invalid_base64(self):
-        """Validate invalid string"""
+        """Test decoding invalid base64 string"""
         result = runner.invoke(main_app, ["misc", "base64", "-d", "!!!invalid!!!"])
         assert result.exit_code == 1
         assert "Invalid base64" in result.stdout
