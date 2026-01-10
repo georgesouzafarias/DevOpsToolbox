@@ -118,7 +118,8 @@ def calculate_age(start_time):
 
 def fetch_pod_metrics(namespace: str = None, all_namespaces: bool = False) -> dict:
     """
-    Fetch pod metrics from the Kubernetes Metrics Server.
+    Retrieves CPU and memory usage metrics for pods from the Kubernetes Metrics Server API.
+    Metrics can be fetched for a specific namespace or across all namespaces in the cluster.
     """
     custom_api = CustomObjectsApi()
 

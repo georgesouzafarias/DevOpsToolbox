@@ -12,7 +12,7 @@ app = typer.Typer(no_args_is_help=True)
 console = Console()
 
 
-class ResourcesChoices(str, Enum):
+class ResourcesChoice(str, Enum):
     cpu = "cpu"
     memory = "memory"
 
@@ -50,8 +50,8 @@ def list(namespace: Annotated[str, typer.Option("--namespace", "-n")] = None, al
 def metrics(
     namespace: Annotated[str, typer.Option("--namespace", "-n")] = None,
     all_namespaces: Annotated[bool, typer.Option("--all-namespaces", "-A")] = False,
-    sort_by: Annotated[ResourcesChoices, typer.Option("--sort-by", "-s")] = None,
-    limit: Annotated[int, typer.Option("--limit", "-l")] = None,
+    sort_by: Annotated[ResourcesChoice, typer.Option("--sort-by", "-s")] = None,
+    limit: Annotated[int, typer.Option("--limit", "-l", min=1)] = None,
 ):
     """Retrieve CPU and memory resources (requests, limits, usage) for all pods."""
     utils.load_kube_config()
@@ -103,7 +103,7 @@ def metrics(
                 )
 
         if sort_by:
-            sort_key = "cpu_value" if sort_by == ResourcesChoices.cpu else "mem_value"
+            sort_key = "cpu_value" if sort_by == ResourcesChoice.cpu else "mem_value"
             rows.sort(key=lambda x: x[sort_key], reverse=True)
 
         if limit:
