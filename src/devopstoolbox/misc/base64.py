@@ -16,9 +16,13 @@ def main(
 ):
     """Encode or decode strings using base64."""
     if file_path:
-        with open(file_path) as f:
-            encoded = b64.b64encode(f.read().encode()).decode()
-            print(encoded)
+        try:
+            with open(file_path) as f:
+                encoded = b64.b64encode(f.read().encode()).decode()
+                print(encoded)
+        except Exception:
+            print("[red]Error: Invalid File Stream[/red]")
+            raise typer.Exit(1)
     elif encode:
         encoded = b64.b64encode(encode.encode()).decode()
         print(encoded)
