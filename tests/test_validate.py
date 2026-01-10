@@ -1,5 +1,7 @@
 """Tests for devopstoolbox.validate module."""
 
+from unittest.mock import mock_open, patch
+
 import pytest
 from typer.testing import CliRunner
 
@@ -107,6 +109,25 @@ class TestValidateYamlFile:
         is_valid, error = validate_yaml_file(yaml_file)
         assert is_valid is True
         assert error == ""
+
+    def test_yaml_generic_exception(self, tmp_path):
+        """Test generic exception handling in YAML validation."""
+        yaml_file = tmp_path / "test.yaml"
+        yaml_file.write_text(SIMPLE_YAML)
+        with patch("builtins.open", side_effect=PermissionError("Permission denied")):
+            is_valid, error = validate_yaml_file(yaml_file)
+            assert is_valid is False
+            assert "Permission denied" in error
+
+    def test_yaml_error_without_problem_mark(self, tmp_path):
+        """Test YAML error without problem_mark attribute."""
+        yaml_file = tmp_path / "test.yaml"
+        yaml_file.write_text(SIMPLE_YAML)
+        with patch("builtins.open", mock_open(read_data="key: value")):
+            with patch("yaml.safe_load_all", side_effect=Exception("Generic YAML error")):
+                is_valid, error = validate_yaml_file(yaml_file)
+                assert is_valid is False
+                assert "Generic YAML error" in error
 
 
 class TestValidateYamlCommand:
@@ -219,6 +240,15 @@ class TestValidateJsonFile:
         is_valid, error = validate_json_file(json_file)
         assert is_valid is False
         assert "line" in error.lower() or "Line" in error
+
+    def test_json_generic_exception(self, tmp_path):
+        """Test generic exception handling in JSON validation."""
+        json_file = tmp_path / "test.json"
+        json_file.write_text(SIMPLE_JSON)
+        with patch("builtins.open", side_effect=PermissionError("Permission denied")):
+            is_valid, error = validate_json_file(json_file)
+            assert is_valid is False
+            assert "Permission denied" in error
 
 
 class TestValidateJsonCommand:
