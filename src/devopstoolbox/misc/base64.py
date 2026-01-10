@@ -1,4 +1,5 @@
 import base64 as b64
+from pathlib import Path
 from typing import Annotated, Optional
 
 import typer
@@ -11,9 +12,14 @@ app = typer.Typer(no_args_is_help=True)
 def main(
     encode: Annotated[Optional[str], typer.Option("--encode", "-e", help="String to encode to base64")] = None,
     decode: Annotated[Optional[str], typer.Option("--decode", "-d", help="Base64 string to decode")] = None,
+    file_path: Annotated[Optional[Path], typer.Option("--file", "-f", help="File to encode to base64")] = None,
 ):
     """Encode or decode strings using base64."""
-    if encode:
+    if file_path:
+        with open(file_path) as f:
+            encoded = b64.b64encode(f.read().encode()).decode()
+            print(encoded)
+    elif encode:
         encoded = b64.b64encode(encode.encode()).decode()
         print(encoded)
     elif decode:
