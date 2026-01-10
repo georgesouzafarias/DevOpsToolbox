@@ -1,17 +1,21 @@
 import typer
 from rich import print
 
-from devopstoolbox import generate, validate
 from devopstoolbox.k8s import certificates, jobs, pods, services
+from devopstoolbox.misc import base64, generate, validate
 
 __version__ = "DevOpsToolbox v0.1.0"
 
 app = typer.Typer(no_args_is_help=True)
 k8s_app = typer.Typer(no_args_is_help=True)
+misc_app = typer.Typer(no_args_is_help=True)
 
 app.add_typer(k8s_app, name="k8s", help="Kubernetes utilities")
-app.add_typer(generate.app, name="generate", help="Generate utilities")
-app.add_typer(validate.app, name="validate", help="tools for validation files")
+app.add_typer(misc_app, name="misc", help="Miscellaneous utilities (password generator, base64, validation)")
+
+misc_app.add_typer(generate.app, name="generate", help="Generate secure random passwords")
+misc_app.add_typer(validate.app, name="validate", help="Validate YAML and JSON files")
+misc_app.add_typer(base64.app, name="base64", help="Encode or decode base64 strings")
 
 k8s_app.add_typer(pods.app, name="pods", help="Manager Pods")
 k8s_app.add_typer(jobs.app, name="jobs", help="Manager Jobs")

@@ -1,0 +1,108 @@
+from unittest.mock import patch
+
+import pytest
+from typer.testing import CliRunner
+
+from devopstoolbox.main import app as main_app
+
+runner = CliRunner()
+
+
+@pytest.fixture
+def text_file(tmp_path):
+    """Create a text file for testing."""
+    file = tmp_path / "test.txt"
+    file.write_text("hello world")
+    return file
+
+
+@pytest.fixture
+def multiline_file(tmp_path):
+    """Create a multiline file for testing."""
+    file = tmp_path / "multiline.txt"
+    file.write_text("line1\nline2\nline3")
+    return file
+
+
+@pytest.fixture
+def binary_file(tmp_path):
+    """Create a binary file for testing."""
+    file = tmp_path / "test.bin"
+    file.write_bytes(b"\x00\x01\x02\xff\xfe\xfd")
+    return file
+
+
+class TestBase64Util:
+    def test_base64_encode(self):
+        """Test encoding a string to base64."""
+        result = runner.invoke(main_app, ["misc", "base64", "-e", "banana"])
+        assert result.exit_code == 0
+        assert result.stdout.strip() == "YmFuYW5h"
+
+    def test_base64_decode(self):
+        """Test decoding a base64 string."""
+        result = runner.invoke(main_app, ["misc", "base64", "-d", "YmFuYW5h"])
+        assert result.exit_code == 0
+        assert result.stdout.strip() == "banana"
+
+    def test_decode_invalid_base64(self):
+        """Test decoding invalid base64 string"""
+        result = runner.invoke(main_app, ["misc", "base64", "-d", "!!!invalid!!!"])
+        assert result.exit_code == 1
+        assert "Invalid base64" in result.stdout
+
+    def test_encode_file(self, text_file):
+        """Encode file content to base64"""
+        result = runner.invoke(main_app, ["misc", "base64", "-f", str(text_file)])
+        assert result.exit_code == 0
+        assert result.stdout.strip() == "aGVsbG8gd29ybGQ="
+
+    def test_encode_multiline_file(self, multiline_file):
+        """Encode multiline file content to base64"""
+        result = runner.invoke(main_app, ["misc", "base64", "-f", str(multiline_file)])
+        assert result.exit_code == 0
+        assert result.stdout.strip() == "bGluZTEKbGluZTIKbGluZTM="
+
+    def test_file_not_found(self, tmp_path):
+        """Test with non-existent file"""
+        result = runner.invoke(main_app, ["misc", "base64", "-f", str(tmp_path / "nonexistent.txt")])
+        assert result.exit_code == 1
+        assert "File not found" in result.stdout
+
+    def test_path_is_directory(self, tmp_path):
+        """Test with directory path instead of file"""
+        result = runner.invoke(main_app, ["misc", "base64", "-f", str(tmp_path)])
+        assert result.exit_code == 1
+        assert "Path is a directory" in result.stdout
+
+    def test_decode_invalid_utf8(self):
+        """Test decoding base64 that produces invalid UTF-8"""
+        # This is valid base64 but decodes to invalid UTF-8 bytes
+        result = runner.invoke(main_app, ["misc", "base64", "-d", "//8="])
+        assert result.exit_code == 1
+        assert "not valid UTF-8" in result.stdout
+
+    def test_multiple_options_error(self, text_file):
+        """Test error when multiple options are provided"""
+        result = runner.invoke(main_app, ["misc", "base64", "-e", "hello", "-d", "aGVsbG8="])
+        assert result.exit_code == 1
+        assert "Provide only one" in result.stdout
+
+    def test_encode_and_file_error(self, text_file):
+        """Test error when both encode and file are provided"""
+        result = runner.invoke(main_app, ["misc", "base64", "-e", "hello", "-f", str(text_file)])
+        assert result.exit_code == 1
+        assert "Provide only one" in result.stdout
+
+    def test_file_permission_denied(self, text_file):
+        """Test error when file permission is denied"""
+        with patch("builtins.open", side_effect=PermissionError("Permission denied")):
+            result = runner.invoke(main_app, ["misc", "base64", "-f", str(text_file)])
+            assert result.exit_code == 1
+            assert "Permission denied" in result.stdout
+
+    def test_encode_binary_file(self, binary_file):
+        """Encode binary file content to base64"""
+        result = runner.invoke(main_app, ["misc", "base64", "-f", str(binary_file)])
+        assert result.exit_code == 0
+        assert result.stdout.strip() == "AAEC//79"

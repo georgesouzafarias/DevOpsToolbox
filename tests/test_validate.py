@@ -1,10 +1,12 @@
 """Tests for devopstoolbox.validate module."""
 
+from unittest.mock import mock_open, patch
+
 import pytest
 from typer.testing import CliRunner
 
 from devopstoolbox.main import app as main_app
-from devopstoolbox.validate import validate_json_file, validate_yaml_file
+from devopstoolbox.misc.validate import validate_json_file, validate_yaml_file
 
 runner = CliRunner()
 
@@ -108,47 +110,66 @@ class TestValidateYamlFile:
         assert is_valid is True
         assert error == ""
 
+    def test_yaml_generic_exception(self, tmp_path):
+        """Test generic exception handling in YAML validation."""
+        yaml_file = tmp_path / "test.yaml"
+        yaml_file.write_text(SIMPLE_YAML)
+        with patch("builtins.open", side_effect=PermissionError("Permission denied")):
+            is_valid, error = validate_yaml_file(yaml_file)
+            assert is_valid is False
+            assert "Permission denied" in error
+
+    def test_yaml_error_without_problem_mark(self, tmp_path):
+        """Test YAML error without problem_mark attribute."""
+        yaml_file = tmp_path / "test.yaml"
+        yaml_file.write_text(SIMPLE_YAML)
+        with patch("builtins.open", mock_open(read_data="key: value")):
+            with patch("yaml.safe_load_all", side_effect=Exception("Generic YAML error")):
+                is_valid, error = validate_yaml_file(yaml_file)
+                assert is_valid is False
+                assert "Generic YAML error" in error
+
 
 class TestValidateYamlCommand:
     def test_validate_single_valid_file(self, valid_yaml_file):
-        result = runner.invoke(main_app, ["validate", "yaml", "-f", str(valid_yaml_file)])
+        result = runner.invoke(main_app, ["misc", "validate", "yaml", "-f", str(valid_yaml_file)])
         assert result.exit_code == 0
         assert "Valid" in result.stdout
         assert "1 valid, 0 invalid" in result.stdout
 
     def test_validate_single_invalid_file(self, invalid_yaml_file):
-        result = runner.invoke(main_app, ["validate", "yaml", "-f", str(invalid_yaml_file)])
+        result = runner.invoke(main_app, ["misc", "validate", "yaml", "-f", str(invalid_yaml_file)])
         assert result.exit_code == 1
         assert "Invalid" in result.stdout
         assert "0 valid, 1 invalid" in result.stdout
 
     def test_validate_directory(self, directory_with_valid_files):
-        result = runner.invoke(main_app, ["validate", "yaml", "-d", str(directory_with_valid_files)])
+        result = runner.invoke(main_app, ["misc", "validate", "yaml", "-d", str(directory_with_valid_files)])
         assert result.exit_code == 0
         assert "2 valid, 0 invalid" in result.stdout
 
     def test_validate_directory_mixed_results(self, directory_with_mixed_files):
-        result = runner.invoke(main_app, ["validate", "yaml", "-d", str(directory_with_mixed_files)])
+        result = runner.invoke(main_app, ["misc", "validate", "yaml", "-d", str(directory_with_mixed_files)])
         assert result.exit_code == 1
         assert "1 valid, 1 invalid" in result.stdout
 
     def test_validate_empty_directory(self, tmp_path):
-        result = runner.invoke(main_app, ["validate", "yaml", "-d", str(tmp_path)])
+        result = runner.invoke(main_app, ["misc", "validate", "yaml", "-d", str(tmp_path)])
         assert result.exit_code == 0
         assert "No YAML files found" in result.stdout
 
     def test_no_file_or_directory_provided(self):
-        result = runner.invoke(main_app, ["validate", "yaml"])
+        result = runner.invoke(main_app, ["misc", "validate", "yaml"])
         assert result.exit_code == 1
         assert "You must provide either a file or a directory" in result.stdout
 
     def test_both_file_and_directory_provided(self, valid_yaml_file):
-        result = runner.invoke(main_app, ["validate", "yaml", "-f", str(valid_yaml_file), "-d", str(valid_yaml_file.parent)])
+        result = runner.invoke(main_app, ["misc", "validate", "yaml", "-f", str(valid_yaml_file), "-d", str(valid_yaml_file.parent)])
         assert result.exit_code == 1
         assert "Provide either a file or a directory, not both" in result.stdout
 
     def test_validate_nested_directory(self, nested_directory):
-        result = runner.invoke(main_app, ["validate", "yaml", "-d", str(nested_directory)])
+        result = runner.invoke(main_app, ["misc", "validate", "yaml", "-d", str(nested_directory)])
         assert result.exit_code == 0
         assert "2 valid, 0 invalid" in result.stdout
 
@@ -220,46 +241,55 @@ class TestValidateJsonFile:
         assert is_valid is False
         assert "line" in error.lower() or "Line" in error
 
+    def test_json_generic_exception(self, tmp_path):
+        """Test generic exception handling in JSON validation."""
+        json_file = tmp_path / "test.json"
+        json_file.write_text(SIMPLE_JSON)
+        with patch("builtins.open", side_effect=PermissionError("Permission denied")):
+            is_valid, error = validate_json_file(json_file)
+            assert is_valid is False
+            assert "Permission denied" in error
+
 
 class TestValidateJsonCommand:
     def test_validate_single_valid_file(self, valid_json_file):
-        result = runner.invoke(main_app, ["validate", "json", "-f", str(valid_json_file)])
+        result = runner.invoke(main_app, ["misc", "validate", "json", "-f", str(valid_json_file)])
         assert result.exit_code == 0
         assert "Valid" in result.stdout
         assert "1 valid, 0 invalid" in result.stdout
 
     def test_validate_single_invalid_file(self, invalid_json_file):
-        result = runner.invoke(main_app, ["validate", "json", "-f", str(invalid_json_file)])
+        result = runner.invoke(main_app, ["misc", "validate", "json", "-f", str(invalid_json_file)])
         assert result.exit_code == 1
         assert "Invalid" in result.stdout
         assert "0 valid, 1 invalid" in result.stdout
 
     def test_validate_directory(self, directory_with_valid_json_files):
-        result = runner.invoke(main_app, ["validate", "json", "-d", str(directory_with_valid_json_files)])
+        result = runner.invoke(main_app, ["misc", "validate", "json", "-d", str(directory_with_valid_json_files)])
         assert result.exit_code == 0
         assert "2 valid, 0 invalid" in result.stdout
 
     def test_validate_directory_mixed_results(self, directory_with_mixed_json_files):
-        result = runner.invoke(main_app, ["validate", "json", "-d", str(directory_with_mixed_json_files)])
+        result = runner.invoke(main_app, ["misc", "validate", "json", "-d", str(directory_with_mixed_json_files)])
         assert result.exit_code == 1
         assert "1 valid, 1 invalid" in result.stdout
 
     def test_validate_empty_directory(self, tmp_path):
-        result = runner.invoke(main_app, ["validate", "json", "-d", str(tmp_path)])
+        result = runner.invoke(main_app, ["misc", "validate", "json", "-d", str(tmp_path)])
         assert result.exit_code == 0
         assert "No JSON files found" in result.stdout
 
     def test_no_file_or_directory_provided(self):
-        result = runner.invoke(main_app, ["validate", "json"])
+        result = runner.invoke(main_app, ["misc", "validate", "json"])
         assert result.exit_code == 1
         assert "You must provide either a file or a directory" in result.stdout
 
     def test_both_file_and_directory_provided(self, valid_json_file):
-        result = runner.invoke(main_app, ["validate", "json", "-f", str(valid_json_file), "-d", str(valid_json_file.parent)])
+        result = runner.invoke(main_app, ["misc", "validate", "json", "-f", str(valid_json_file), "-d", str(valid_json_file.parent)])
         assert result.exit_code == 1
         assert "Provide either a file or a directory, not both" in result.stdout
 
     def test_validate_nested_directory(self, nested_json_directory):
-        result = runner.invoke(main_app, ["validate", "json", "-d", str(nested_json_directory)])
+        result = runner.invoke(main_app, ["misc", "validate", "json", "-d", str(nested_json_directory)])
         assert result.exit_code == 0
         assert "2 valid, 0 invalid" in result.stdout
