@@ -4,7 +4,7 @@ import pytest
 from typer.testing import CliRunner
 
 from devopstoolbox.main import app as main_app
-from devopstoolbox.validate import validate_json_file, validate_yaml_file
+from devopstoolbox.misc.validate import validate_json_file, validate_yaml_file
 
 runner = CliRunner()
 

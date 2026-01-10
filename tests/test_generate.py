@@ -1,6 +1,6 @@
 from typer.testing import CliRunner
 
-from devopstoolbox.generate import app
+from devopstoolbox.misc.generate import app
 
 runner = CliRunner()
 
