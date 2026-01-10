@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 
 import urllib3
 from kubernetes import config
+from kubernetes.client import CustomObjectsApi
 
 # Hide InsecureRequestWarning when CA certificate is not configured
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -113,3 +114,25 @@ def calculate_age(start_time):
         return f"{minutes}m{seconds}s"
     else:
         return f"{seconds}s"
+
+
+def fetch_pod_metrics(namespace: str = None, all_namespaces: bool = False) -> dict:
+    """
+    Fetch pod metrics from the Kubernetes Metrics Server.
+    """
+    custom_api = CustomObjectsApi()
+
+    if all_namespaces:
+        pod_metrics = custom_api.list_cluster_custom_object(group="metrics.k8s.io", version="v1beta1", plural="pods")
+    else:
+        pod_metrics = custom_api.list_namespaced_custom_object(group="metrics.k8s.io", version="v1beta1", namespace=namespace, plural="pods")
+
+    metrics_by_container = {}
+    for pod in pod_metrics.get("items", []):
+        pod_name = pod.get("metadata", {}).get("name", "")
+        pod_ns = pod.get("metadata", {}).get("namespace", "")
+        for container in pod.get("containers", []):
+            key = (pod_ns, pod_name, container.get("name"))
+            metrics_by_container[key] = container.get("usage", {})
+
+    return metrics_by_container
