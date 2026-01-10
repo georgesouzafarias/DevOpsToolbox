@@ -71,3 +71,15 @@ class TestBase64Util:
         result = runner.invoke(main_app, ["misc", "base64", "-d", "//8="])
         assert result.exit_code == 1
         assert "not valid UTF-8" in result.stdout
+
+    def test_multiple_options_error(self, text_file):
+        """Test error when multiple options are provided"""
+        result = runner.invoke(main_app, ["misc", "base64", "-e", "hello", "-d", "aGVsbG8="])
+        assert result.exit_code == 1
+        assert "Provide only one" in result.stdout
+
+    def test_encode_and_file_error(self, text_file):
+        """Test error when both encode and file are provided"""
+        result = runner.invoke(main_app, ["misc", "base64", "-e", "hello", "-f", str(text_file)])
+        assert result.exit_code == 1
+        assert "Provide only one" in result.stdout

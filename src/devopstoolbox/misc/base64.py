@@ -16,6 +16,11 @@ def main(
     file_path: Annotated[Optional[Path], typer.Option("--file", "-f", help="File to encode to base64")] = None,
 ):
     """Encode or decode strings using base64."""
+    options_count = sum(1 for opt in [encode, decode, file_path] if opt is not None)
+    if options_count > 1:
+        print("[red]Error: Provide only one of --encode, --decode, or --file.[/red]")
+        raise typer.Exit(1)
+
     if file_path:
         try:
             with open(file_path) as f:
