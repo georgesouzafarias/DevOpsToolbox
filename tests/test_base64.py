@@ -56,4 +56,18 @@ class TestBase64Util:
     def test_file_not_found(self, tmp_path):
         """Test with non-existent file"""
         result = runner.invoke(main_app, ["misc", "base64", "-f", str(tmp_path / "nonexistent.txt")])
-        assert result.exit_code != 0
+        assert result.exit_code == 1
+        assert "File not found" in result.stdout
+
+    def test_path_is_directory(self, tmp_path):
+        """Test with directory path instead of file"""
+        result = runner.invoke(main_app, ["misc", "base64", "-f", str(tmp_path)])
+        assert result.exit_code == 1
+        assert "Path is a directory" in result.stdout
+
+    def test_decode_invalid_utf8(self):
+        """Test decoding base64 that produces invalid UTF-8"""
+        # This is valid base64 but decodes to invalid UTF-8 bytes
+        result = runner.invoke(main_app, ["misc", "base64", "-d", "//8="])
+        assert result.exit_code == 1
+        assert "not valid UTF-8" in result.stdout

@@ -1,4 +1,5 @@
 import base64 as b64
+import binascii
 from pathlib import Path
 from typing import Annotated, Optional
 
@@ -20,8 +21,14 @@ def main(
             with open(file_path) as f:
                 encoded = b64.b64encode(f.read().encode()).decode()
                 print(encoded)
-        except Exception:
-            print("[red]Error: Invalid File Stream[/red]")
+        except FileNotFoundError:
+            print(f"[red]Error: File not found: {file_path}[/red]")
+            raise typer.Exit(1)
+        except PermissionError:
+            print(f"[red]Error: Permission denied: {file_path}[/red]")
+            raise typer.Exit(1)
+        except IsADirectoryError:
+            print(f"[red]Error: Path is a directory: {file_path}[/red]")
             raise typer.Exit(1)
     elif encode:
         encoded = b64.b64encode(encode.encode()).decode()
@@ -30,6 +37,9 @@ def main(
         try:
             decoded = b64.b64decode(decode).decode()
             print(decoded)
-        except Exception:
+        except binascii.Error:
             print("[red]Error: Invalid base64 string.[/red]")
+            raise typer.Exit(1)
+        except UnicodeDecodeError:
+            print("[red]Error: Decoded content is not valid UTF-8 text.[/red]")
             raise typer.Exit(1)
