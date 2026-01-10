@@ -24,6 +24,14 @@ def multiline_file(tmp_path):
     return file
 
 
+@pytest.fixture
+def binary_file(tmp_path):
+    """Create a binary file for testing."""
+    file = tmp_path / "test.bin"
+    file.write_bytes(b"\x00\x01\x02\xff\xfe\xfd")
+    return file
+
+
 class TestBase64Util:
     def test_base64_encode(self):
         """Test encoding a string to base64."""
@@ -92,3 +100,9 @@ class TestBase64Util:
             result = runner.invoke(main_app, ["misc", "base64", "-f", str(text_file)])
             assert result.exit_code == 1
             assert "Permission denied" in result.stdout
+
+    def test_encode_binary_file(self, binary_file):
+        """Encode binary file content to base64"""
+        result = runner.invoke(main_app, ["misc", "base64", "-f", str(binary_file)])
+        assert result.exit_code == 0
+        assert result.stdout.strip() == "AAEC//79"

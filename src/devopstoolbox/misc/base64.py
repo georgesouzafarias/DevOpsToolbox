@@ -23,8 +23,8 @@ def main(
 
     if file_path:
         try:
-            with open(file_path) as f:
-                encoded = b64.b64encode(f.read().encode()).decode()
+            with open(file_path, "rb") as f:
+                encoded = b64.b64encode(f.read()).decode()
                 print(encoded)
         except FileNotFoundError:
             print(f"[red]Error: File not found: {file_path}[/red]")
