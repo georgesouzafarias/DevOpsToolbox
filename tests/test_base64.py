@@ -24,13 +24,13 @@ def multiline_file(tmp_path):
 
 class TestBase64Util:
     def test_base64_encode(self):
-        """Encode string"""
+        """Test encoding a string to base64."""
         result = runner.invoke(main_app, ["misc", "base64", "-e", "banana"])
         assert result.exit_code == 0
         assert result.stdout.strip() == "YmFuYW5h"
 
     def test_base64_decode(self):
-        """Decode string"""
+        """Test decoding a base64 string."""
         result = runner.invoke(main_app, ["misc", "base64", "-d", "YmFuYW5h"])
         assert result.exit_code == 0
         assert result.stdout.strip() == "banana"
