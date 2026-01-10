@@ -11,6 +11,7 @@ A Python-based CLI toolkit for automating daily DevOps operations.
 
 - **Kubernetes Management**: Manage pods, services, jobs, and certificates from the command line
 - **File Validation**: Validate YAML and JSON files for syntax errors with detailed error reporting
+- **Utilities**: Generate passwords, encode/decode base64 strings
 - **Human-readable Output**: Formatted tables with Rich for clear visualization
 - **Metrics Support**: View CPU and memory usage for pods (requires Metrics Server)
 - **Certificate Management**: List and monitor cert-manager certificates
@@ -49,9 +50,9 @@ devopstoolbox --help
 
 All Kubernetes commands support short aliases for common options, matching kubectl conventions:
 
-| Long Form          | Short | Description                    |
-| ------------------ | ----- | ------------------------------ |
-| `--namespace`      | `-n`  | Specify the namespace          |
+| Long Form          | Short | Description                          |
+| ------------------ | ----- | ------------------------------------ |
+| `--namespace`      | `-n`  | Specify the namespace                |
 | `--all-namespaces` | `-A`  | List resources across all namespaces |
 
 ### Pods Management
@@ -71,6 +72,12 @@ devopstoolbox k8s pods unhealthy -A
 
 # Show pod metrics (CPU and memory usage)
 devopstoolbox k8s pods metrics -n default
+
+# Show pod metrics sorted by CPU usage
+devopstoolbox k8s pods metrics -A --sort-by cpu
+
+# Show top 10 pods by memory usage
+devopstoolbox k8s pods metrics -A --sort-by memory --limit 10
 ```
 
 ### Services Management
@@ -115,20 +122,45 @@ devopstoolbox k8s certificates list -n cert-manager
 devopstoolbox k8s certificates not-ready -n default
 ```
 
-### File Validation
+### Miscellaneous Utilities
+
+#### Password Generation
+
+```bash
+# Generate a 16-character password (default)
+devopstoolbox misc generate
+
+# Generate a password with custom length
+devopstoolbox misc generate -l 30
+devopstoolbox misc generate --length 24
+```
+
+#### Base64 Encoding/Decoding
+
+```bash
+# Encode a string to base64
+devopstoolbox misc base64 --encode "hello world"
+devopstoolbox misc base64 -e "secret text"
+
+# Decode a base64 string
+devopstoolbox misc base64 --decode "aGVsbG8gd29ybGQ="
+devopstoolbox misc base64 -d "c2VjcmV0IHRleHQ="
+```
+
+#### File Validation
 
 ```bash
 # Validate a single YAML file
-devopstoolbox validate yaml -f deployment.yaml
+devopstoolbox misc validate yaml -f deployment.yaml
 
 # Validate all YAML files in a directory (recursive)
-devopstoolbox validate yaml -d ./manifests
+devopstoolbox misc validate yaml -d ./manifests
 
 # Validate a single JSON file
-devopstoolbox validate json -f config.json
+devopstoolbox misc validate json -f config.json
 
 # Validate all JSON files in a directory (recursive)
-devopstoolbox validate json -d ./configs
+devopstoolbox misc validate json -d ./configs
 ```
 
 ## Command Reference
@@ -136,16 +168,26 @@ devopstoolbox validate json -d ./configs
 | Command                                    | Description                                |
 | ------------------------------------------ | ------------------------------------------ |
 | `devopstoolbox version`                    | Show tool version                          |
+| **Kubernetes - Pods**                      |                                            |
 | `devopstoolbox k8s pods list`              | List pods with status and restart count    |
 | `devopstoolbox k8s pods metrics`           | Show CPU and memory usage per container    |
 | `devopstoolbox k8s pods unhealthy`         | List pods not in Running/Succeeded state   |
+| **Kubernetes - Services**                  |                                            |
 | `devopstoolbox k8s services list`          | List services with type and traffic policy |
+| **Kubernetes - Jobs**                      |                                            |
 | `devopstoolbox k8s jobs list`              | List jobs with status and age              |
 | `devopstoolbox k8s jobs failed`            | List only failed jobs with error messages  |
+| **Kubernetes - Certificates**              |                                            |
 | `devopstoolbox k8s certificates list`      | List cert-manager certificates             |
 | `devopstoolbox k8s certificates not-ready` | List certificates not in Ready state       |
-| `devopstoolbox validate yaml`              | Validate YAML files for syntax errors      |
-| `devopstoolbox validate json`              | Validate JSON files for syntax errors      |
+| **Misc - Generate**                        |                                            |
+| `devopstoolbox misc generate`              | Generate a secure random password          |
+| **Misc - Base64**                          |                                            |
+| `devopstoolbox misc base64 -e <string>`    | Encode a string to base64                  |
+| `devopstoolbox misc base64 -d <string>`    | Decode a base64 string                     |
+| **Misc - Validate**                        |                                            |
+| `devopstoolbox misc validate yaml`         | Validate YAML files for syntax errors      |
+| `devopstoolbox misc validate json`         | Validate JSON files for syntax errors      |
 
 ## Dependencies
 
