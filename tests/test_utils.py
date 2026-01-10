@@ -3,6 +3,8 @@
 from datetime import datetime, timedelta, timezone
 from unittest.mock import Mock, patch
 
+import pytest
+
 from devopstoolbox.k8s import utils
 from devopstoolbox.k8s.utils import calculate_age, calculate_cpu_percentage, calculate_memory_percentage, fetch_pod_metrics, parse_cpu, parse_memory
 
@@ -340,11 +342,8 @@ class TestFetchPodMetrics:
         mock_custom_api_class.return_value = mock_custom_api
         mock_custom_api.list_namespaced_custom_object.side_effect = Exception("Metrics Server not available")
 
-        try:
+        with pytest.raises(Exception, match="Metrics Server not available"):
             fetch_pod_metrics("default", all_namespaces=False)
-            assert False, "Expected exception to be raised"
-        except Exception as e:
-            assert "Metrics Server not available" in str(e)
 
     @patch("devopstoolbox.k8s.utils.CustomObjectsApi")
     def test_fetch_metrics_multiple_pods(self, mock_custom_api_class):
