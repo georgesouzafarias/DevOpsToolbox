@@ -142,6 +142,10 @@ devopstoolbox misc generate --length 24
 devopstoolbox misc base64 --encode "hello world"
 devopstoolbox misc base64 -e "secret text"
 
+# Encode a file to base64
+devopstoolbox misc base64 --file /path/to/file.txt
+devopstoolbox misc base64 -f ./config.yaml
+
 # Decode a base64 string
 devopstoolbox misc base64 --decode "aGVsbG8gd29ybGQ="
 devopstoolbox misc base64 -d "c2VjcmV0IHRleHQ="
@@ -184,6 +188,7 @@ devopstoolbox misc validate json -d ./configs
 | `devopstoolbox misc generate`              | Generate a secure random password          |
 | **Misc - Base64**                          |                                            |
 | `devopstoolbox misc base64 -e <string>`    | Encode a string to base64                  |
+| `devopstoolbox misc base64 -f <file>`      | Encode a file to base64                    |
 | `devopstoolbox misc base64 -d <string>`    | Decode a base64 string                     |
 | **Misc - Validate**                        |                                            |
 | `devopstoolbox misc validate yaml`         | Validate YAML files for syntax errors      |
