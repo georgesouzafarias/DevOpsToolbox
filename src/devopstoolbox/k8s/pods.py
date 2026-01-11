@@ -119,8 +119,11 @@ def _sort_and_limit_rows(rows: list[dict], sort_by: ResourcesChoice | None, limi
 
 
 @app.command()
-def list(namespace: Annotated[str, typer.Option("--namespace", "-n")] = None, all_namespaces: Annotated[bool, typer.Option("--all-namespaces", "-A")] = False):
-    """List pods"""
+def list(
+    namespace: Annotated[str, typer.Option("--namespace", "-n", help="Kubernetes namespace to query")] = None,
+    all_namespaces: Annotated[bool, typer.Option("--all-namespaces", "-A", help="Query all namespaces")] = False,
+):
+    """List all pods with status, restart count, and age."""
 
     try:
         rows, scope, _ = _fetch_pod_resource_data(namespace, all_namespaces)
@@ -142,12 +145,12 @@ def list(namespace: Annotated[str, typer.Option("--namespace", "-n")] = None, al
 
 @app.command()
 def metrics(
-    namespace: Annotated[str, typer.Option("--namespace", "-n")] = None,
-    all_namespaces: Annotated[bool, typer.Option("--all-namespaces", "-A")] = False,
-    sort_by: Annotated[ResourcesChoice, typer.Option("--sort-by", "-s")] = None,
-    limit: Annotated[int, typer.Option("--limit", "-l", min=1)] = None,
+    namespace: Annotated[str, typer.Option("--namespace", "-n", help="Kubernetes namespace to query")] = None,
+    all_namespaces: Annotated[bool, typer.Option("--all-namespaces", "-A", help="Query all namespaces")] = False,
+    sort_by: Annotated[ResourcesChoice, typer.Option("--sort-by", "-s", help="Sort results by cpu or memory usage")] = None,
+    limit: Annotated[int, typer.Option("--limit", "-l", min=1, help="Limit the number of results")] = None,
 ):
-    """Retrieve CPU and memory resources (requests, limits, usage) for all pods."""
+    """Show CPU and memory metrics (requests, limits, usage) for all pods."""
     try:
         rows, scope, _ = _fetch_pod_resource_data(namespace, all_namespaces)
         console.print(f"[bold blue]Listing pod resources in {scope}...[/bold blue]")
@@ -188,10 +191,11 @@ def metrics(
 
 
 @app.command()
-def unhealthy(namespace: Annotated[str, typer.Option("--namespace", "-n")] = None, all_namespaces: Annotated[bool, typer.Option("--all-namespaces", "-A")] = False):
-    """
-    List pods with issues (not in Running or Succeeded state).
-    """
+def unhealthy(
+    namespace: Annotated[str, typer.Option("--namespace", "-n", help="Kubernetes namespace to query")] = None,
+    all_namespaces: Annotated[bool, typer.Option("--all-namespaces", "-A", help="Query all namespaces")] = False,
+):
+    """List pods not in Running or Succeeded state."""
     utils.load_kube_config()
     namespace = namespace or utils.get_current_namespace()
     scope = "all namespaces" if all_namespaces else f"namespace {namespace}"
@@ -221,17 +225,13 @@ def unhealthy(namespace: Annotated[str, typer.Option("--namespace", "-n")] = Non
 
 @app.command()
 def overprovisioned(
-    namespace: Annotated[str, typer.Option("--namespace", "-n")] = None,
-    all_namespaces: Annotated[bool, typer.Option("--all-namespaces", "-A")] = False,
-    sort_by: Annotated[ResourcesChoice, typer.Option("--sort-by", "-s")] = None,
-    limit: Annotated[int, typer.Option("--limit", "-l", min=1)] = None,
-    threshold: Annotated[float, typer.Option("--threshold", "-th", min=0)] = 50,
+    namespace: Annotated[str, typer.Option("--namespace", "-n", help="Kubernetes namespace to query")] = None,
+    all_namespaces: Annotated[bool, typer.Option("--all-namespaces", "-A", help="Query all namespaces")] = False,
+    sort_by: Annotated[ResourcesChoice, typer.Option("--sort-by", "-s", help="Sort results by cpu or memory usage")] = None,
+    limit: Annotated[int, typer.Option("--limit", "-l", min=1, help="Limit the number of results")] = None,
+    threshold: Annotated[float, typer.Option("--threshold", "-th", min=0, help="Usage threshold percentage (default: 50)")] = 50,
 ):
-    """Identify pods with overprovisioned CPU and memory resources.
-
-    Compares resource requests vs actual usage from Metrics Server.
-    Flags pods where usage is below the specified threshold percentage of requests.
-    """
+    """Find pods where resource usage is below threshold percentage of requests."""
     try:
         rows, scope, _ = _fetch_pod_resource_data(namespace, all_namespaces)
         rows = [row for row in rows if row["cpu_provisioned_value"] < threshold or row["mem_provisioned_value"] < threshold]
