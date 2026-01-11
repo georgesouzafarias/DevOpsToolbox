@@ -12,8 +12,11 @@ console = Console()
 
 
 @app.command()
-def list(namespace: Annotated[str, typer.Option("--namespace", "-n")] = None, all_namespaces: Annotated[bool, typer.Option("--all-namespaces", "-A")] = False):
-    """List Jobs"""
+def list(
+    namespace: Annotated[str, typer.Option("--namespace", "-n", help="Kubernetes namespace to query")] = None,
+    all_namespaces: Annotated[bool, typer.Option("--all-namespaces", "-A", help="Query all namespaces")] = False,
+):
+    """List all jobs with status and age."""
     utils.load_kube_config()
     namespace = namespace or utils.get_current_namespace()
     scope = "all namespaces" if all_namespaces else f"namespace {namespace}"
@@ -48,8 +51,11 @@ def list(namespace: Annotated[str, typer.Option("--namespace", "-n")] = None, al
 
 
 @app.command()
-def failed(namespace: Annotated[str, typer.Option("--namespace", "-n")] = None, all_namespaces: Annotated[bool, typer.Option("--all-namespaces", "-A")] = False):
-    """List only failed Jobs"""
+def failed(
+    namespace: Annotated[str, typer.Option("--namespace", "-n", help="Kubernetes namespace to query")] = None,
+    all_namespaces: Annotated[bool, typer.Option("--all-namespaces", "-A", help="Query all namespaces")] = False,
+):
+    """List only failed jobs with error messages."""
     utils.load_kube_config()
     namespace = namespace or utils.get_current_namespace()
     scope = "all namespaces" if all_namespaces else f"namespace {namespace}"

@@ -44,8 +44,8 @@ def validate_json_file(file_path: Path) -> tuple[bool, str]:
 
 @app.command()
 def yaml(
-    file: Annotated[Path, typer.Option("--file", "-f", exists=True, file_okay=True, dir_okay=False, resolve_path=True)] = None,
-    directory: Annotated[Path, typer.Option("--directory", "-d", exists=True, file_okay=False, dir_okay=True, resolve_path=True)] = None,
+    file: Annotated[Path, typer.Option("--file", "-f", exists=True, file_okay=True, dir_okay=False, resolve_path=True, help="Single YAML file to validate")] = None,
+    directory: Annotated[Path, typer.Option("--directory", "-d", exists=True, file_okay=False, dir_okay=True, resolve_path=True, help="Directory to scan for YAML files")] = None,
 ):
     """Validate YAML files for syntax errors."""
     if file is None and directory is None:
@@ -93,8 +93,8 @@ def yaml(
 
 @app.command()
 def json(
-    file: Annotated[Path, typer.Option("--file", "-f", exists=True, file_okay=True, dir_okay=False, resolve_path=True)] = None,
-    directory: Annotated[Path, typer.Option("--directory", "-d", exists=True, file_okay=False, dir_okay=True, resolve_path=True)] = None,
+    file: Annotated[Path, typer.Option("--file", "-f", exists=True, file_okay=True, dir_okay=False, resolve_path=True, help="Single JSON file to validate")] = None,
+    directory: Annotated[Path, typer.Option("--directory", "-d", exists=True, file_okay=False, dir_okay=True, resolve_path=True, help="Directory to scan for JSON files")] = None,
 ):
     """Validate JSON files for syntax errors."""
     if file is None and directory is None:
