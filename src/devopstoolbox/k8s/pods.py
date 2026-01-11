@@ -182,9 +182,13 @@ def overprovisioned(
     all_namespaces: Annotated[bool, typer.Option("--all-namespaces", "-A")] = False,
     sort_by: Annotated[ResourcesChoice, typer.Option("--sort-by", "-s")] = None,
     limit: Annotated[int, typer.Option("--limit", "-l", min=1)] = None,
-    threshold: Annotated[float, typer.Option("--threshold", "-th", min=0)] = 20,
+    threshold: Annotated[float, typer.Option("--threshold", "-th", min=0)] = 50,
 ):
-    """Retrieve CPU and memory resources (requests, limits, usage) for all pods."""
+    """Identify pods with overprovisioned CPU and memory resources.
+
+    Compares resource requests vs actual usage from Metrics Server.
+    Flags pods where usage is below the specified threshold percentage of requests.
+    """
     utils.load_kube_config()
     namespace = namespace or utils.get_current_namespace()
     scope = "all namespaces" if all_namespaces else f"namespace {namespace}"
