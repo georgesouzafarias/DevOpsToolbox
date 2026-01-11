@@ -80,6 +80,11 @@ class TestParseMemory:
         assert parse_memory("invalid") == "invalid"
         assert parse_memory("100MB") == "100MB"
 
+    def test_parse_invalid_return_number(self):
+        """Test that invalid formats return 0 when return_number=True."""
+        assert parse_memory("invalid", return_number=True) == 0
+        assert parse_memory("100MB", return_number=True) == 0
+
     def test_parse_zero(self):
         """Test parsing zero values."""
         assert parse_memory("0Ki") == "0 B"
@@ -96,6 +101,11 @@ class TestCpuPercentage:
         assert calculate_cpu_percentage("1000", "x") == 0
         assert calculate_cpu_percentage("x", "1000") == 0
         assert calculate_cpu_percentage("x", "x") == 0
+
+    def test_calculate_division_by_zero(self):
+        """Test that division by zero returns 0 instead of raising an error."""
+        assert calculate_cpu_percentage("100m", "0m") == 0
+        assert calculate_cpu_percentage("100m", "0n") == 0
 
     def test_parse_nanocores(self):
         assert calculate_cpu_percentage("10000n", "300000n") == pytest.approx(3.3333333333333335)
@@ -129,6 +139,11 @@ class TestMemoryPercentage:
         assert calculate_memory_percentage("1000", "x") == 0
         assert calculate_memory_percentage("x", "1000") == 0
         assert calculate_memory_percentage("x", "x") == 0
+
+    def test_calculate_division_by_zero(self):
+        """Test that division by zero returns 0 instead of raising an error."""
+        assert calculate_memory_percentage("100Mi", "0Ki") == 0
+        assert calculate_memory_percentage("100Mi", "invalid") == 0
 
     def test_alculate_kibibytes(self):
         assert calculate_memory_percentage("1024Ki", "1024Ki") == pytest.approx(100.00)

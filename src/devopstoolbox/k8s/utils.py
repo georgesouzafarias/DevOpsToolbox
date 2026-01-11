@@ -66,7 +66,7 @@ def parse_memory(mem_str: str, return_number: bool = False):
     units = {"Ki": 1024, "Mi": 1024**2, "Gi": 1024**3, "Ti": 1024**4}
     match = re.match(r"^(\d+)(Ki|Mi|Gi|Ti)?$", mem_str)
     if not match:
-        return mem_str
+        return 0 if return_number else mem_str
     value = int(match.group(1))
     unit = match.group(2) or ""
     bytes_val = value * units.get(unit, 1)
@@ -86,18 +86,22 @@ def calculate_cpu_percentage(usage, limit) -> float:
     """Calculate CPU usage percentage from usage and limit values."""
     if usage is None or limit is None or not (usage[:-1].isdigit() or usage.isdigit()) or not (limit[:-1].isdigit() or limit.isdigit()):
         return 0
-    else:
-        result = parse_cpu(usage, return_number=True) / parse_cpu(limit, return_number=True) * 100
-        return result
+    limit_value = parse_cpu(limit, return_number=True)
+    if limit_value == 0:
+        return 0
+    result = parse_cpu(usage, return_number=True) / limit_value * 100
+    return result
 
 
 def calculate_memory_percentage(usage, limit) -> float:
     """Calculate Memory usage percentage from usage and limit values."""
     if usage is None or limit is None or not usage[:-2].isdigit() or not limit[:-2].isdigit():
         return 0
-    else:
-        result = parse_memory(usage, return_number=True) / parse_memory(limit, return_number=True) * 100
-        return result
+    limit_value = parse_memory(limit, return_number=True)
+    if limit_value == 0:
+        return 0
+    result = parse_memory(usage, return_number=True) / limit_value * 100
+    return result
 
 
 def calculate_age(start_time):
