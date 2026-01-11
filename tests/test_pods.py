@@ -1,5 +1,6 @@
 """Tests for devopstoolbox.k8s.pods module."""
 
+from datetime import datetime, timezone
 from unittest.mock import Mock, patch
 
 import pytest
@@ -308,6 +309,9 @@ class TestPodsMetricsCommand:
         pod = Mock()
         pod.metadata.namespace = "default"
         pod.metadata.name = "test-pod"
+        pod.status.phase = "Running"
+        pod.status.container_statuses = []
+        pod.status.start_time = datetime.now(timezone.utc)
         mock_container.name = "main"
         pod.spec.containers = [mock_container]
 
@@ -348,11 +352,15 @@ class TestPodsMetricsCommand:
         low_cpu_pod = Mock()
         low_cpu_pod.metadata.namespace = "default"
         low_cpu_pod.metadata.name = "aaa"
+        low_cpu_pod.status.container_statuses = []
+        low_cpu_pod.status.start_time = datetime.now(timezone.utc)
         low_cpu_pod.spec.containers = [low_cpu_container]
 
         high_cpu_pod = Mock()
         high_cpu_pod.metadata.namespace = "default"
         high_cpu_pod.metadata.name = "zzz"
+        high_cpu_pod.status.container_statuses = []
+        high_cpu_pod.status.start_time = datetime.now(timezone.utc)
         high_cpu_pod.spec.containers = [high_cpu_container]
 
         mock_pods = Mock()
@@ -391,11 +399,15 @@ class TestPodsMetricsCommand:
         low_mem_pod = Mock()
         low_mem_pod.metadata.namespace = "default"
         low_mem_pod.metadata.name = "aaa"
+        low_mem_pod.status.container_statuses = []
+        low_mem_pod.status.start_time = datetime.now(timezone.utc)
         low_mem_pod.spec.containers = [low_mem_container]
 
         high_mem_pod = Mock()
         high_mem_pod.metadata.namespace = "default"
         high_mem_pod.metadata.name = "zzz"
+        high_mem_pod.status.container_statuses = []
+        high_mem_pod.status.start_time = datetime.now(timezone.utc)
         high_mem_pod.spec.containers = [high_mem_container]
 
         mock_pods = Mock()
@@ -432,6 +444,8 @@ class TestPodsMetricsCommand:
             pod = Mock()
             pod.metadata.namespace = "default"
             pod.metadata.name = name
+            pod.status.container_statuses = []
+            pod.status.start_time = datetime.now(timezone.utc)
             pod.spec.containers = [container]
             pods_list.append(pod)
 
@@ -511,6 +525,8 @@ class TestPodsOverprovisionedCommand:
         pod = Mock()
         pod.metadata.namespace = "default"
         pod.metadata.name = "lpod"
+        pod.status.container_statuses = []
+        pod.status.start_time = datetime.now(timezone.utc)
         pod.spec.containers = [container]
 
         mock_pods = Mock()
@@ -541,6 +557,8 @@ class TestPodsOverprovisionedCommand:
         pod = Mock()
         pod.metadata.namespace = "default"
         pod.metadata.name = "well-utilized-pod"
+        pod.status.container_statuses = []
+        pod.status.start_time = datetime.now(timezone.utc)
         pod.spec.containers = [container]
 
         mock_pods = Mock()
@@ -570,6 +588,8 @@ class TestPodsOverprovisionedCommand:
         pod = Mock()
         pod.metadata.namespace = "default"
         pod.metadata.name = "xyz"
+        pod.status.container_statuses = []
+        pod.status.start_time = datetime.now(timezone.utc)
         pod.spec.containers = [container]
 
         mock_pods = Mock()
@@ -622,6 +642,8 @@ class TestPodsOverprovisionedCommand:
             pod = Mock()
             pod.metadata.namespace = "default"
             pod.metadata.name = name
+            pod.status.container_statuses = []
+            pod.status.start_time = datetime.now(timezone.utc)
             pod.spec.containers = [container]
             pods_list.append(pod)
 
@@ -660,6 +682,8 @@ class TestPodsOverprovisionedCommand:
             pod = Mock()
             pod.metadata.namespace = "default"
             pod.metadata.name = name
+            pod.status.container_statuses = []
+            pod.status.start_time = datetime.now(timezone.utc)
             pod.spec.containers = [container]
             pods_list.append(pod)
 
@@ -687,6 +711,8 @@ class TestPodsOverprovisionedCommand:
         pod = Mock()
         pod.metadata.namespace = "default"
         pod.metadata.name = "abc"
+        pod.status.container_statuses = []
+        pod.status.start_time = datetime.now(timezone.utc)
         mock_container.name = "main"
         pod.spec.containers = [mock_container]
 

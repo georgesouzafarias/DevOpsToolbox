@@ -65,6 +65,10 @@ def _fetch_pod_resource_data(namespace: str, all_namespaces: bool) -> tuple[list
             cpu_request_percent = utils.calculate_cpu_percentage(usage.get("cpu"), requests.get("cpu"))
             mem_request_percent = utils.calculate_memory_percentage(usage.get("memory"), requests.get("memory"))
 
+            status = pod.status.phase
+            restart_count = sum((status.restart_count or 0) for status in pod.status.container_statuses or [])
+            age = utils.calculate_age(pod.status.start_time)
+
             rows.append(
                 {
                     "namespace": pod_ns,
@@ -84,6 +88,9 @@ def _fetch_pod_resource_data(namespace: str, all_namespaces: bool) -> tuple[list
                     "mem_provisioned_value": mem_request_percent,
                     "cpu_value": utils.parse_cpu(cpu_raw, return_number=True) if usage else 0,
                     "mem_value": utils.parse_memory(mem_raw, return_number=True) if usage else 0,
+                    "statuses": status,
+                    "restart_count": f"{restart_count}",
+                    "age": age,
                 }
             )
 
@@ -114,14 +121,9 @@ def _sort_and_limit_rows(rows: list[dict], sort_by: ResourcesChoice | None, limi
 @app.command()
 def list(namespace: Annotated[str, typer.Option("--namespace", "-n")] = None, all_namespaces: Annotated[bool, typer.Option("--all-namespaces", "-A")] = False):
     """List pods"""
-    utils.load_kube_config()
-    namespace = namespace or utils.get_current_namespace()
-    scope = "all namespaces" if all_namespaces else f"namespace {namespace}"
-    console.print(f"[bold blue]Listing pods in {scope}...[/bold blue]")
 
     try:
-        v1 = client.CoreV1Api()
-        pods = v1.list_pod_for_all_namespaces(watch=False) if all_namespaces else v1.list_namespaced_pod(namespace, watch=False)
+        rows, scope, _ = _fetch_pod_resource_data(namespace, all_namespaces)
 
         table = Table(title=f"Pods in {scope}")
         table.add_column("Namespace", style="cyan", justify="center")
@@ -130,10 +132,8 @@ def list(namespace: Annotated[str, typer.Option("--namespace", "-n")] = None, al
         table.add_column("Age", justify="center")
         table.add_column("Status", style="green", justify="center")
 
-        for pod in pods.items:
-            statuses = pod.status.container_statuses or []
-            restart_count = sum((status.restart_count or 0) for status in statuses)
-            table.add_row(pod.metadata.namespace or "-", pod.metadata.name, str(restart_count), utils.calculate_age(pod.status.start_time), pod.status.phase)
+        for row in rows:
+            table.add_row(row["namespace"], row["pod"], row["restart_count"], row["age"], row["statuses"])
 
         console.print(table)
     except Exception as err:
