@@ -238,7 +238,7 @@ def overprovisioned(
 
         rows = _sort_and_limit_rows(rows, sort_by, limit)
 
-        table = Table(title=f"Overprovisioned Pods in {scope} and Threshold: {threshold}%")
+        table = Table(title=f"Overprovisioned Pods in {scope} (Threshold: {threshold}%)")
         table.add_column("Namespace", style="cyan", justify="center")
         table.add_column("Pod Name", style="cyan", justify="center")
         table.add_column("Container", style="cyan", justify="center")
