@@ -1,10 +1,15 @@
+from importlib.metadata import version
+
 import typer
 from rich import print
 
 from devopstoolbox.k8s import certificates, jobs, pods, services
 from devopstoolbox.misc import base64, generate, validate
 
-__version__ = "DevOpsToolbox v0.1.0"
+try:
+    __version__ = f"DevOpsToolbox v{version('devopstoolbox')}"
+except Exception:
+    __version__ = "DevOpsToolbox (development)"
 
 app = typer.Typer(no_args_is_help=True)
 k8s_app = typer.Typer(no_args_is_help=True)

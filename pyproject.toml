@@ -1,15 +1,40 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=61.0", "setuptools-scm>=8.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "devopstoolbox"
-version = "0.1.0"
+dynamic = ["version"]
 description = "A Python-based CLI toolkit for automating daily DevOps operations."
 requires-python = ">=3.9"
 readme = "README.md"
+license = {text = "MIT"}
 authors = [
   { name = "George Farias", email = "georgesouzafarias@gmail.com" },
+]
+keywords = [
+    "devops",
+    "kubernetes",
+    "k8s",
+    "aws",
+    "cli",
+    "automation",
+    "sre",
+    "infrastructure",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "Topic :: System :: Systems Administration",
+    "Topic :: Utilities",
 ]
 
 dependencies = [
@@ -42,3 +67,10 @@ select = [
 
 [project.scripts]
 devopstoolbox = "devopstoolbox.main:app"
+
+[project.urls]
+Homepage = "https://github.com/georgesouzafarias/DevOpsToolbox"
+Repository = "https://github.com/georgesouzafarias/DevOpsToolbox"
+Issues = "https://github.com/georgesouzafarias/DevOpsToolbox/issues"
+
+[tool.setuptools_scm]
