@@ -246,12 +246,12 @@ def overprovisioned(
         table.add_column("CPU Limit", style="yellow", justify="center")
         table.add_column("CPU Usage", style="magenta", justify="center")
         table.add_column("CPU Usage %", style="magenta", justify="center")
-        table.add_column("CPU From Request %", style="magenta", justify="center")
+        table.add_column("CPU % of Request", style="magenta", justify="center")
         table.add_column("Mem Req", style="green", justify="center")
         table.add_column("Mem Limit", style="yellow", justify="center")
         table.add_column("Mem Usage", style="magenta", justify="center")
         table.add_column("Mem Usage %", style="magenta", justify="center")
-        table.add_column("Mem From Request %", style="magenta", justify="center")
+        table.add_column("Mem % of Request", style="magenta", justify="center")
 
         for row in rows:
             table.add_row(
