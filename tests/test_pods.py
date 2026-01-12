@@ -73,28 +73,59 @@ class TestPodsListCommand:
     """Tests for pods list command."""
 
     @patch("devopstoolbox.k8s.pods.client.CoreV1Api")
-    def test_list_pods_default_namespace(self, mock_api, mock_pod):
+    @patch("devopstoolbox.k8s.utils.fetch_pod_metrics")
+    def test_list_pods_default_namespace(self, mock_fetch_metrics, mock_api):
         """Test listing pods in default namespace."""
+        mock_fetch_metrics.return_value = {}
         mock_v1 = Mock()
         mock_api.return_value = mock_v1
 
+        container = Mock()
+        container.name = "main"
+        container.resources.requests = {"cpu": "100m", "memory": "128Mi"}
+        container.resources.limits = {"cpu": "200m", "memory": "256Mi"}
+
+        pod = Mock()
+        pod.metadata.namespace = "default"
+        pod.metadata.name = "test-pod"
+        pod.status.phase = "Running"
+        pod.status.container_statuses = []
+        pod.status.start_time = datetime.now(timezone.utc)
+        pod.spec.containers = [container]
+
         mock_pods = Mock()
-        mock_pods.items = [mock_pod]
+        mock_pods.items = [pod]
         mock_v1.list_namespaced_pod.return_value = mock_pods
 
         result = runner.invoke(pods.app, ["list", "-n", "default"])
 
         assert result.exit_code == 0
+        assert "test-pod" in result.output
         mock_v1.list_namespaced_pod.assert_called_once_with("default", watch=False)
 
     @patch("devopstoolbox.k8s.pods.client.CoreV1Api")
-    def test_list_pods_specific_namespace_long(self, mock_api, mock_pod):
+    @patch("devopstoolbox.k8s.utils.fetch_pod_metrics")
+    def test_list_pods_specific_namespace_long(self, mock_fetch_metrics, mock_api):
         """Test listing pods in a specific namespace."""
+        mock_fetch_metrics.return_value = {}
         mock_v1 = Mock()
         mock_api.return_value = mock_v1
 
+        container = Mock()
+        container.name = "main"
+        container.resources.requests = {"cpu": "100m", "memory": "128Mi"}
+        container.resources.limits = {"cpu": "200m", "memory": "256Mi"}
+
+        pod = Mock()
+        pod.metadata.namespace = "kube-system"
+        pod.metadata.name = "test-pod"
+        pod.status.phase = "Running"
+        pod.status.container_statuses = []
+        pod.status.start_time = datetime.now(timezone.utc)
+        pod.spec.containers = [container]
+
         mock_pods = Mock()
-        mock_pods.items = [mock_pod]
+        mock_pods.items = [pod]
         mock_v1.list_namespaced_pod.return_value = mock_pods
 
         result = runner.invoke(pods.app, ["list", "--namespace", "kube-system"])
@@ -103,13 +134,28 @@ class TestPodsListCommand:
         mock_v1.list_namespaced_pod.assert_called_once_with("kube-system", watch=False)
 
     @patch("devopstoolbox.k8s.pods.client.CoreV1Api")
-    def test_list_pods_specific_namespace_short(self, mock_api, mock_pod):
+    @patch("devopstoolbox.k8s.utils.fetch_pod_metrics")
+    def test_list_pods_specific_namespace_short(self, mock_fetch_metrics, mock_api):
         """Test listing pods in a specific namespace."""
+        mock_fetch_metrics.return_value = {}
         mock_v1 = Mock()
         mock_api.return_value = mock_v1
 
+        container = Mock()
+        container.name = "main"
+        container.resources.requests = {"cpu": "100m", "memory": "128Mi"}
+        container.resources.limits = {"cpu": "200m", "memory": "256Mi"}
+
+        pod = Mock()
+        pod.metadata.namespace = "kube-system"
+        pod.metadata.name = "test-pod"
+        pod.status.phase = "Running"
+        pod.status.container_statuses = []
+        pod.status.start_time = datetime.now(timezone.utc)
+        pod.spec.containers = [container]
+
         mock_pods = Mock()
-        mock_pods.items = [mock_pod]
+        mock_pods.items = [pod]
         mock_v1.list_namespaced_pod.return_value = mock_pods
 
         result = runner.invoke(pods.app, ["list", "-n", "kube-system"])
@@ -118,13 +164,28 @@ class TestPodsListCommand:
         mock_v1.list_namespaced_pod.assert_called_once_with("kube-system", watch=False)
 
     @patch("devopstoolbox.k8s.pods.client.CoreV1Api")
-    def test_list_pods_all_namespaces_long(self, mock_api, mock_pod):
+    @patch("devopstoolbox.k8s.utils.fetch_pod_metrics")
+    def test_list_pods_all_namespaces_long(self, mock_fetch_metrics, mock_api):
         """Test listing pods across all namespaces."""
+        mock_fetch_metrics.return_value = {}
         mock_v1 = Mock()
         mock_api.return_value = mock_v1
 
+        container = Mock()
+        container.name = "main"
+        container.resources.requests = {"cpu": "100m", "memory": "128Mi"}
+        container.resources.limits = {"cpu": "200m", "memory": "256Mi"}
+
+        pod = Mock()
+        pod.metadata.namespace = "default"
+        pod.metadata.name = "test-pod"
+        pod.status.phase = "Running"
+        pod.status.container_statuses = []
+        pod.status.start_time = datetime.now(timezone.utc)
+        pod.spec.containers = [container]
+
         mock_pods = Mock()
-        mock_pods.items = [mock_pod]
+        mock_pods.items = [pod]
         mock_v1.list_pod_for_all_namespaces.return_value = mock_pods
 
         result = runner.invoke(pods.app, ["list", "--all-namespaces"])
@@ -133,13 +194,28 @@ class TestPodsListCommand:
         mock_v1.list_pod_for_all_namespaces.assert_called_once_with(watch=False)
 
     @patch("devopstoolbox.k8s.pods.client.CoreV1Api")
-    def test_list_pods_all_namespaces_short(self, mock_api, mock_pod):
+    @patch("devopstoolbox.k8s.utils.fetch_pod_metrics")
+    def test_list_pods_all_namespaces_short(self, mock_fetch_metrics, mock_api):
         """Test listing pods across all namespaces."""
+        mock_fetch_metrics.return_value = {}
         mock_v1 = Mock()
         mock_api.return_value = mock_v1
 
+        container = Mock()
+        container.name = "main"
+        container.resources.requests = {"cpu": "100m", "memory": "128Mi"}
+        container.resources.limits = {"cpu": "200m", "memory": "256Mi"}
+
+        pod = Mock()
+        pod.metadata.namespace = "default"
+        pod.metadata.name = "test-pod"
+        pod.status.phase = "Running"
+        pod.status.container_statuses = []
+        pod.status.start_time = datetime.now(timezone.utc)
+        pod.spec.containers = [container]
+
         mock_pods = Mock()
-        mock_pods.items = [mock_pod]
+        mock_pods.items = [pod]
         mock_v1.list_pod_for_all_namespaces.return_value = mock_pods
 
         result = runner.invoke(pods.app, ["list", "-A"])
@@ -148,16 +224,25 @@ class TestPodsListCommand:
         mock_v1.list_pod_for_all_namespaces.assert_called_once_with(watch=False)
 
     @patch("devopstoolbox.k8s.pods.client.CoreV1Api")
-    def test_list_pods_handles_no_container_statuses(self, mock_api):
+    @patch("devopstoolbox.k8s.utils.fetch_pod_metrics")
+    def test_list_pods_handles_no_container_statuses(self, mock_fetch_metrics, mock_api):
         """Test handling pods with no container statuses."""
+        mock_fetch_metrics.return_value = {}
         mock_v1 = Mock()
         mock_api.return_value = mock_v1
+
+        container = Mock()
+        container.name = "main"
+        container.resources.requests = {"cpu": "100m", "memory": "128Mi"}
+        container.resources.limits = {"cpu": "200m", "memory": "256Mi"}
 
         pod = Mock()
         pod.metadata.namespace = "default"
         pod.metadata.name = "pending-pod"
         pod.status.phase = "Pending"
         pod.status.container_statuses = None
+        pod.status.start_time = datetime.now(timezone.utc)
+        pod.spec.containers = [container]
 
         mock_pods = Mock()
         mock_pods.items = [pod]
@@ -725,3 +810,17 @@ class TestPodsOverprovisionedCommand:
         assert result.exit_code == 0
         # Check for "Request" in output (may be truncated in Rich table)
         assert "Request" in result.output or "Req" in result.output
+
+    @patch("devopstoolbox.k8s.pods.client.CoreV1Api")
+    @patch("devopstoolbox.k8s.utils.fetch_pod_metrics")
+    def test_overprovisioned_handles_api_error(self, mock_fetch_metrics, mock_core_api):
+        """Test handling Kubernetes API errors in overprovisioned command."""
+        mock_fetch_metrics.return_value = {}
+        mock_v1 = Mock()
+        mock_core_api.return_value = mock_v1
+        mock_v1.list_namespaced_pod.side_effect = Exception("API Error")
+
+        result = runner.invoke(pods.app, ["overprovisioned"])
+
+        assert result.exit_code == 0
+        assert "Error" in result.output
