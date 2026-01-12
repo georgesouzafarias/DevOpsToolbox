@@ -129,6 +129,19 @@ class TestValidateYamlFile:
                 assert is_valid is False
                 assert "Generic YAML error" in error
 
+    def test_yaml_error_without_problem_mark_real(self, tmp_path):
+        """Test YAMLError without problem_mark attribute using real yaml module."""
+        import yaml
+
+        yaml_file = tmp_path / "test.yaml"
+        yaml_file.write_text(SIMPLE_YAML)
+        # Create a YAMLError without problem_mark
+        yaml_error = yaml.YAMLError("YAML parsing failed")
+        with patch("yaml.safe_load_all", side_effect=yaml_error):
+            is_valid, error = validate_yaml_file(yaml_file)
+            assert is_valid is False
+            assert "YAML parsing failed" in error
+
 
 class TestValidateYamlCommand:
     def test_validate_single_valid_file(self, valid_yaml_file):
@@ -249,6 +262,22 @@ class TestValidateJsonFile:
             is_valid, error = validate_json_file(json_file)
             assert is_valid is False
             assert "Permission denied" in error
+
+    def test_json_decode_error_without_line_col(self, tmp_path):
+        """Test JSONDecodeError without lineno/colno attributes."""
+        import json
+
+        json_file = tmp_path / "test.json"
+        json_file.write_text(SIMPLE_JSON)
+        # Create a JSONDecodeError without lineno/colno by removing them
+        json_error = json.JSONDecodeError("Invalid JSON", "", 0)
+        # Remove lineno and colno attributes
+        del json_error.lineno
+        del json_error.colno
+        with patch("json.load", side_effect=json_error):
+            is_valid, error = validate_json_file(json_file)
+            assert is_valid is False
+            assert "Invalid JSON" in error
 
 
 class TestValidateJsonCommand:

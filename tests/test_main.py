@@ -66,3 +66,42 @@ class TestAppStructure:
         assert result.exit_code == 0
         assert "list" in result.output
         assert "not-ready" in result.output
+
+    def test_misc_subcommand_exists(self):
+        """Test that misc subcommand is available."""
+        result = runner.invoke(app, ["misc", "--help"])
+
+        assert result.exit_code == 0
+        assert "generate" in result.output
+        assert "validate" in result.output
+        assert "base64" in result.output
+
+    def test_k8s_jobs_subcommand_exists(self):
+        """Test that k8s jobs subcommand is available."""
+        result = runner.invoke(app, ["k8s", "jobs", "--help"])
+
+        assert result.exit_code == 0
+        assert "list" in result.output
+
+
+class TestMainModule:
+    """Tests for main module entry point."""
+
+    def test_main_module_execution(self):
+        """Test that the main module can be run as script."""
+        import runpy
+        import sys
+
+        import pytest
+
+        original_argv = sys.argv
+        try:
+            sys.argv = ["devopstoolbox", "--help"]
+            # Run the module as __main__ - this will trigger the if __name__ == "__main__" block
+            # SystemExit is expected because typer exits after showing help
+            with pytest.raises(SystemExit) as exc_info:
+                runpy.run_module("devopstoolbox.main", run_name="__main__", alter_sys=True)
+            # Exit code 0 means success (help was displayed)
+            assert exc_info.value.code == 0
+        finally:
+            sys.argv = original_argv
