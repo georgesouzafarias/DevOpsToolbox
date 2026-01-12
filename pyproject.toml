@@ -12,6 +12,16 @@ license = {text = "MIT"}
 authors = [
   { name = "George Farias", email = "georgesouzafarias@gmail.com" },
 ]
+keywords = [
+    "devops",
+    "kubernetes",
+    "k8s",
+    "aws",
+    "cli",
+    "automation",
+    "sre",
+    "infrastructure",
+]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
