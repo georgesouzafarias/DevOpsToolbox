@@ -12,7 +12,10 @@ console = Console()
 
 
 @app.command()
-def list(namespace: Annotated[str, typer.Option("--namespace", "-n")] = None, all_namespaces: Annotated[bool, typer.Option("--all-namespaces", "-A")] = False):
+def list(
+    namespace: Annotated[str, typer.Option("--namespace", "-n", help="Kubernetes namespace to query")] = None,
+    all_namespaces: Annotated[bool, typer.Option("--all-namespaces", "-A", help="Query all namespaces")] = False,
+):
     """List cert-manager certificates with renewal time and status."""
     utils.load_kube_config()
     namespace = namespace or utils.get_current_namespace()
@@ -46,7 +49,10 @@ def list(namespace: Annotated[str, typer.Option("--namespace", "-n")] = None, al
 
 
 @app.command()
-def not_ready(namespace: Annotated[str, typer.Option("--namespace", "-n")] = None, all_namespaces: Annotated[bool, typer.Option("--all-namespaces", "-A")] = False):
+def not_ready(
+    namespace: Annotated[str, typer.Option("--namespace", "-n", help="Kubernetes namespace to query")] = None,
+    all_namespaces: Annotated[bool, typer.Option("--all-namespaces", "-A", help="Query all namespaces")] = False,
+):
     """List certificates that are not in Ready state."""
     utils.load_kube_config()
     namespace = namespace or utils.get_current_namespace()

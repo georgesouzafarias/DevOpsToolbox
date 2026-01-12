@@ -12,8 +12,11 @@ console = Console()
 
 
 @app.command()
-def list(namespace: Annotated[str, typer.Option("--namespace", "-n")] = None, all_namespaces: Annotated[bool, typer.Option("--all-namespaces", "-A")] = False):
-    """List services"""
+def list(
+    namespace: Annotated[str, typer.Option("--namespace", "-n", help="Kubernetes namespace to query")] = None,
+    all_namespaces: Annotated[bool, typer.Option("--all-namespaces", "-A", help="Query all namespaces")] = False,
+):
+    """List all services with type and traffic policy."""
     utils.load_kube_config()
     namespace = namespace or utils.get_current_namespace()
     scope = "all namespaces" if all_namespaces else f"namespace {namespace}"

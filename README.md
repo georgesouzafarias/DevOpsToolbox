@@ -78,6 +78,15 @@ devopstoolbox k8s pods metrics -A --sort-by cpu
 
 # Show top 10 pods by memory usage
 devopstoolbox k8s pods metrics -A --sort-by memory --limit 10
+
+# Find overprovisioned pods (usage below 50% of request)
+devopstoolbox k8s pods overprovisioned -n default
+
+# Find overprovisioned pods with custom threshold (30%)
+devopstoolbox k8s pods overprovisioned -A --threshold 30
+
+# Find overprovisioned pods sorted by CPU, limit to top 10
+devopstoolbox k8s pods overprovisioned -A --sort-by cpu --limit 10
 ```
 
 ### Services Management
@@ -176,6 +185,7 @@ devopstoolbox misc validate json -d ./configs
 | `devopstoolbox k8s pods list`              | List pods with status and restart count    |
 | `devopstoolbox k8s pods metrics`           | Show CPU and memory usage per container    |
 | `devopstoolbox k8s pods unhealthy`         | List pods not in Running/Succeeded state   |
+| `devopstoolbox k8s pods overprovisioned`   | Find pods with resources below threshold   |
 | **Kubernetes - Services**                  |                                            |
 | `devopstoolbox k8s services list`          | List services with type and traffic policy |
 | **Kubernetes - Jobs**                      |                                            |

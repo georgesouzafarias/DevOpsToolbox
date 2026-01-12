@@ -80,6 +80,11 @@ class TestParseMemory:
         assert parse_memory("invalid") == "invalid"
         assert parse_memory("100MB") == "100MB"
 
+    def test_parse_invalid_return_number(self):
+        """Test that invalid formats return 0 when return_number=True."""
+        assert parse_memory("invalid", return_number=True) == 0
+        assert parse_memory("100MB", return_number=True) == 0
+
     def test_parse_zero(self):
         """Test parsing zero values."""
         assert parse_memory("0Ki") == "0 B"
@@ -88,72 +93,82 @@ class TestParseMemory:
 
 class TestCpuPercentage:
     def test_calculate_zero(self):
-        assert calculate_cpu_percentage(None, None) == "-"
-        assert calculate_cpu_percentage(None, 1000) == "-"
-        assert calculate_cpu_percentage(100, None) == "-"
+        assert calculate_cpu_percentage(None, None) == 0
+        assert calculate_cpu_percentage(None, 1000) == 0
+        assert calculate_cpu_percentage(100, None) == 0
 
     def test_calculate_invalid(self):
-        assert calculate_cpu_percentage("1000", "x") == "-"
-        assert calculate_cpu_percentage("x", "1000") == "-"
-        assert calculate_cpu_percentage("x", "x") == "-"
+        assert calculate_cpu_percentage("1000", "x") == 0
+        assert calculate_cpu_percentage("x", "1000") == 0
+        assert calculate_cpu_percentage("x", "x") == 0
+
+    def test_calculate_division_by_zero(self):
+        """Test that division by zero returns 0 instead of raising an error."""
+        assert calculate_cpu_percentage("100m", "0m") == 0
+        assert calculate_cpu_percentage("100m", "0n") == 0
 
     def test_parse_nanocores(self):
-        assert calculate_cpu_percentage("10000n", "300000n") == "3.33%"
-        assert calculate_cpu_percentage("300000n", "300000n") == "100.00%"
+        assert calculate_cpu_percentage("10000n", "300000n") == pytest.approx(3.3333333333333335)
+        assert calculate_cpu_percentage("300000n", "300000n") == pytest.approx(100.00)
 
     def test_parse_microcores(self):
-        assert calculate_cpu_percentage("100u", "1000u") == "10.00%"
-        assert calculate_cpu_percentage("1000u", "1000u") == "100.00%"
-        assert calculate_cpu_percentage("500u", "1000u") == "50.00%"
+        assert calculate_cpu_percentage("100u", "1000u") == pytest.approx(10.00)
+        assert calculate_cpu_percentage("1000u", "1000u") == pytest.approx(100.00)
+        assert calculate_cpu_percentage("500u", "1000u") == pytest.approx(50.00)
 
     def test_parse_milicores(self):
-        assert calculate_cpu_percentage("10000m", "300000m") == "3.33%"
-        assert calculate_cpu_percentage("300000m", "300000m") == "100.00%"
+        assert calculate_cpu_percentage("10000m", "300000m") == pytest.approx(3.3333333333333335)
+        assert calculate_cpu_percentage("300000m", "300000m") == pytest.approx(100.00)
 
     def test_parse_cores(self):
-        assert calculate_cpu_percentage("1", "3") == "33.33%"
-        assert calculate_cpu_percentage("3", "3") == "100.00%"
+        assert calculate_cpu_percentage("1", "3") == pytest.approx(33.33333333333333)
+        assert calculate_cpu_percentage("3", "3") == pytest.approx(100.00)
 
     def test_parse_mix_nanocores_milicores(self):
-        assert calculate_cpu_percentage("10000m", "300000000000n") == "3.33%"
-        assert calculate_cpu_percentage("300000000000n", "300000m") == "100.00%"
+        assert calculate_cpu_percentage("10000m", "300000000000n") == pytest.approx(3.3333333333333335)
+        assert calculate_cpu_percentage("300000000000n", "300000m") == pytest.approx(100.00)
 
 
 class TestMemoryPercentage:
     def test_calculate_zero(self):
-        assert calculate_memory_percentage(None, None) == "-"
-        assert calculate_memory_percentage(None, 1000) == "-"
-        assert calculate_memory_percentage(100, None) == "-"
+        assert calculate_memory_percentage(None, None) == 0
+        assert calculate_memory_percentage(None, 1000) == 0
+        assert calculate_memory_percentage(100, None) == 0
 
     def test_calculate_invalid(self):
-        assert calculate_memory_percentage("1000", "x") == "-"
-        assert calculate_memory_percentage("x", "1000") == "-"
-        assert calculate_memory_percentage("x", "x") == "-"
+        assert calculate_memory_percentage("1000", "x") == 0
+        assert calculate_memory_percentage("x", "1000") == 0
+        assert calculate_memory_percentage("x", "x") == 0
+
+    def test_calculate_division_by_zero(self):
+        """Test that division by zero returns 0 instead of raising an error."""
+        assert calculate_memory_percentage("100Mi", "0Ki") == 0
+        assert calculate_memory_percentage("100Mi", "invalid") == 0
 
     def test_alculate_kibibytes(self):
-        assert calculate_memory_percentage("1024Ki", "1024Ki") == "100.00%"
-        assert calculate_memory_percentage("1024Ki", "512Ki") == "200.00%"
-        assert calculate_memory_percentage("512Ki", "1024Ki") == "50.00%"
+        assert calculate_memory_percentage("1024Ki", "1024Ki") == pytest.approx(100.00)
+        assert calculate_memory_percentage("1024Ki", "512Ki") == pytest.approx(200.00)
+        assert calculate_memory_percentage("512Ki", "1024Ki") == pytest.approx(50.00)
 
     def test_calculate_parse_mebibytes(self):
-        assert calculate_memory_percentage("1024Mi", "1024Mi") == "100.00%"
-        assert calculate_memory_percentage("1024Mi", "512Mi") == "200.00%"
-        assert calculate_memory_percentage("512Mi", "1024Mi") == "50.00%"
+        assert calculate_memory_percentage("1024Mi", "1024Mi") == pytest.approx(100.00)
+        assert calculate_memory_percentage("1024Mi", "512Mi") == pytest.approx(200.00)
+        assert calculate_memory_percentage("512Mi", "1024Mi") == pytest.approx(50.00)
 
     def test_calculate_parse_gibibytes(self):
-        assert calculate_memory_percentage("1024Gi", "1024Gi") == "100.00%"
-        assert calculate_memory_percentage("1024Gi", "512Gi") == "200.00%"
-        assert calculate_memory_percentage("512Gi", "1024Gi") == "50.00%"
+        assert calculate_memory_percentage("1024Gi", "1024Gi") == pytest.approx(100.00)
+        assert calculate_memory_percentage("1024Gi", "512Gi") == pytest.approx(200.00)
+        assert calculate_memory_percentage("512Gi", "1024Gi") == pytest.approx(50.00)
 
     def test_calculate_parse_tebibytes(self):
-        assert calculate_memory_percentage("1024Ti", "1024Ti") == "100.00%"
-        assert calculate_memory_percentage("1024Ti", "512Ti") == "200.00%"
-        assert calculate_memory_percentage("512Ti", "1024Ti") == "50.00%"
+        assert calculate_memory_percentage("1024Ti", "1024Ti") == pytest.approx(100.00)
+        assert calculate_memory_percentage("1024Ti", "512Ti") == pytest.approx(200.00)
+        assert calculate_memory_percentage("512Ti", "1024Ti") == pytest.approx(50.00)
 
     def test_calculate_parse_bytes(self):
-        assert calculate_memory_percentage("1024", "1024") == "100.00%"
-        assert calculate_memory_percentage("1024", "512") == "200.00%"
-        assert calculate_memory_percentage("512", "1024") == "50.00%"
+        assert calculate_memory_percentage("1024", "1024") == pytest.approx(100.00)
+        assert calculate_memory_percentage("1024", "512") == pytest.approx(200.00)
+        assert calculate_memory_percentage("512", "1024") == pytest.approx(50.00)
 
 
 class TestLoadKubeConfig:
